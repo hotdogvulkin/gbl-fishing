@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #f9fafb;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Retained for fallback — primary knot transitions now use inline CSS transitions */
+@keyframes fadein { from { opacity: 0 } to { opacity: 1 } }
+.knot-fadein { animation: fadein 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
