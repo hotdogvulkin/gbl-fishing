@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, type FormEvent, type KeyboardEvent } from 'react'
+import { useMode } from '../context/ModeContext'
 
 interface NominatimResult {
   place_id: number
@@ -39,7 +40,13 @@ interface Props {
   loading: boolean
 }
 
+const PLACEHOLDER = {
+  freshwater: 'e.g. Lake Butler, FL',
+  saltwater:  'Drop a pin or enter your launch point',
+}
+
 export default function LocationSearch({ onSearch, loading }: Props) {
+  const { mode } = useMode()
   const [value, setValue] = useState('')
   const [suggestions, setSuggestions] = useState<NominatimResult[]>([])
   const [open, setOpen] = useState(false)
@@ -117,7 +124,7 @@ export default function LocationSearch({ onSearch, loading }: Props) {
             onChange={e => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => { if (suggestions.length > 0) setOpen(true) }}
-            placeholder="e.g. Lake Butler, FL"
+            placeholder={PLACEHOLDER[mode]}
             autoComplete="off"
             className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
           />

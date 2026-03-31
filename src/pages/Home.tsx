@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFishingRecommendation } from '../hooks/useFishingRecommendation'
 import { useAuth } from '../context/AuthContext'
+import { useMode, type FishingMode } from '../context/ModeContext'
 import LocationSearch from '../components/LocationSearch'
 import ConditionsBar from '../components/ConditionsBar'
 import RecommendationCard from '../components/RecommendationCard'
@@ -70,11 +71,51 @@ function AccountMenu() {
   )
 }
 
+// ── Mode toggle ───────────────────────────────────────────────────────────────
+
+function ModeToggle() {
+  const { mode, setMode } = useMode()
+  const isSaltwater = mode === 'saltwater'
+
+  return (
+    <div className="flex items-center bg-gray-100 rounded-xl p-0.5 text-xs font-semibold select-none">
+      <button
+        onClick={() => setMode('freshwater')}
+        className={`px-3 py-1.5 rounded-[10px] transition-colors ${
+          !isSaltwater
+            ? 'bg-white text-teal-600 shadow-sm'
+            : 'text-gray-400 hover:text-gray-600'
+        }`}
+      >
+        Freshwater
+      </button>
+      <button
+        onClick={() => setMode('saltwater')}
+        className={`px-3 py-1.5 rounded-[10px] transition-colors ${
+          isSaltwater
+            ? 'bg-white text-teal-600 shadow-sm'
+            : 'text-gray-400 hover:text-gray-600'
+        }`}
+      >
+        Saltwater
+      </button>
+    </div>
+  )
+}
+
+// ── Mode-specific copy ────────────────────────────────────────────────────────
+
+const COPY: Record<FishingMode, { subtitle: string }> = {
+  freshwater: { subtitle: 'Real-time conditions. One clear recommendation.' },
+  saltwater:  { subtitle: 'Offshore conditions. Know before you go.' },
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Home() {
   const [submittedLocation, setSubmittedLocation] = useState('')
   const { weather, recommendation, loading, error, fetchRecommendation } = useFishingRecommendation()
+  const { mode } = useMode()
 
   function handleSearch(location: string) {
     setSubmittedLocation(location)
@@ -84,12 +125,17 @@ export default function Home() {
   return (
     <div className="pt-6 pb-4">
       {/* Page header */}
-      <div className="px-4 mb-5 flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">GBL Fishing</h1>
-          <p className="text-sm text-gray-500 mt-1">Real-time conditions. One clear recommendation.</p>
+      <div className="px-4 mb-5">
+        {/* Top row: title + account */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">GBL Fishing</h1>
+            <p className="text-sm text-gray-500 mt-1">{COPY[mode].subtitle}</p>
+          </div>
+          <AccountMenu />
         </div>
-        <AccountMenu />
+        {/* Mode toggle */}
+        <ModeToggle />
       </div>
 
       {/* Location search */}
