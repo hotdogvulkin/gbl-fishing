@@ -51,14 +51,25 @@ function PlusIcon() {
   )
 }
 
+function BarChartIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+      <rect x="3"  y="12" width="4" height="9" rx="0.5" />
+      <rect x="10" y="7"  width="4" height="14" rx="0.5" />
+      <rect x="17" y="3"  width="4" height="18" rx="0.5" />
+    </svg>
+  )
+}
+
 // ─── Tab config ───────────────────────────────────────────────────────────────
 
 const tabs = [
-  { to: '/',            label: 'Home',     Icon: HomeIcon,  end: true  },
-  { to: '/species',     label: 'Species',  Icon: FishIcon,  end: false },
-  { to: '/regulations', label: 'Regs',     Icon: BookIcon,  end: false },
-  { to: '/log',         label: 'Log',      Icon: LogIcon,   end: false },
-  { to: '/log/new',     label: 'New Trip', Icon: PlusIcon,  end: false },
+  { to: '/',            label: 'Home',     Icon: HomeIcon,      end: true  },
+  { to: '/species',     label: 'Species',  Icon: FishIcon,      end: false },
+  { to: '/regulations', label: 'Regs',     Icon: BookIcon,      end: false },
+  { to: '/log',         label: 'Log',      Icon: LogIcon,       end: false },
+  { to: '/stats',       label: 'Stats',    Icon: BarChartIcon,  end: false },
+  { to: '/log/new',     label: 'New Trip', Icon: PlusIcon,      end: false },
 ]
 
 export default function BottomNav() {
