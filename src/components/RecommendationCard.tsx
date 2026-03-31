@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
-import type { Recommendation, FishingRating } from '../types'
+import type { Recommendation, SaltwaterRecommendation, FishingRating } from '../types'
+import { isSaltwaterRec } from '../types'
 import { knotNameToSlug } from '../lib/knots'
 
 interface Props {
-  recommendation: Recommendation
+  recommendation: Recommendation | SaltwaterRecommendation
   location: string
 }
 
@@ -49,7 +50,9 @@ function DetailRow({ icon, label, value, linkTo, linkState }: DetailRowProps) {
 
 export default function RecommendationCard({ recommendation, location }: Props) {
   const rating = ratingConfig[recommendation.rating] ?? ratingConfig.fair
-  const knotSlug = knotNameToSlug(recommendation.bestKnot)
+  const isSalt = isSaltwaterRec(recommendation)
+  const knotName = isSalt ? recommendation.knot : recommendation.bestKnot
+  const knotSlug = knotNameToSlug(knotName)
 
   return (
     <div className="mx-4 mt-4 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -72,15 +75,33 @@ export default function RecommendationCard({ recommendation, location }: Props) 
       {/* Detail rows */}
       <div className="px-4">
         <DetailRow icon="🐟" label="Target Fish" value={recommendation.targetFish} />
-        <DetailRow icon="🪱" label="Best Bait"   value={recommendation.bestBait} />
-        <DetailRow
-          icon="🪢"
-          label="Best Knot"
-          value={recommendation.bestKnot}
-          linkTo={`/knots/${knotSlug}`}
-          linkState={{ reason: recommendation.bestKnot }}
-        />
-        <DetailRow icon="⏰" label="Best Time"   value={recommendation.timingWindow} />
+        {isSalt ? (
+          <>
+            <DetailRow icon="📍" label="Where to Go"  value={recommendation.recommendedArea} />
+            <DetailRow icon="📏" label="Target Depth" value={recommendation.depth} />
+            <DetailRow icon="🪱" label="Bait / Lure"  value={recommendation.bait} />
+            <DetailRow
+              icon="🪢"
+              label="Knot"
+              value={knotName}
+              linkTo={`/knots/${knotSlug}`}
+              linkState={{ reason: knotName }}
+            />
+            <DetailRow icon="🌊" label="Best Tide Window" value={recommendation.timing} />
+          </>
+        ) : (
+          <>
+            <DetailRow icon="🪱" label="Best Bait" value={recommendation.bestBait} />
+            <DetailRow
+              icon="🪢"
+              label="Best Knot"
+              value={knotName}
+              linkTo={`/knots/${knotSlug}`}
+              linkState={{ reason: knotName }}
+            />
+            <DetailRow icon="⏰" label="Best Time" value={recommendation.timingWindow} />
+          </>
+        )}
       </div>
 
       {/* Reasoning */}

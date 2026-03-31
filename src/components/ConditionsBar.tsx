@@ -1,7 +1,8 @@
-import type { WeatherConditions } from '../types'
+import type { WeatherConditions, MarineConditions } from '../types'
 
 interface Props {
   conditions: WeatherConditions
+  marine?: MarineConditions | null
 }
 
 interface Chip {
@@ -10,7 +11,7 @@ interface Chip {
   value: string
 }
 
-export default function ConditionsBar({ conditions }: Props) {
+export default function ConditionsBar({ conditions, marine }: Props) {
   const chips: Chip[] = [
     { icon: '🌡️', label: 'Temp',     value: `${conditions.tempF}°F` },
     { icon: '💨', label: 'Wind',     value: `${conditions.windSpeedMph} mph` },
@@ -18,6 +19,14 @@ export default function ConditionsBar({ conditions }: Props) {
     { icon: '📊', label: 'Pressure', value: `${conditions.pressureHpa} hPa` },
     { icon: conditions.moonPhase.emoji, label: 'Moon', value: conditions.moonPhase.name },
   ]
+
+  if (marine) {
+    chips.push({ icon: '🌊', label: 'Waves', value: `${marine.waveHeightFt} ft` })
+    if (marine.seaTempF !== null) {
+      chips.push({ icon: '🌡️', label: 'Sea Temp', value: `${marine.seaTempF}°F` })
+    }
+    chips.push({ icon: '🌊', label: 'Tide', value: marine.tideStatus })
+  }
 
   return (
     <div className="mt-4">

@@ -118,8 +118,10 @@ export default function Home() {
   const { mode } = useMode()
   const isSaltwater = mode === 'saltwater'
 
-  const { weather, recommendation, loading, error, fetchRecommendation, fetchRecommendationByCoords, reset } =
-    useFishingRecommendation()
+  const {
+    weather, marine, recommendation, loading, error,
+    fetchRecommendation, fetchRecommendationByCoords, fetchSaltwaterRecommendation, reset,
+  } = useFishingRecommendation()
 
   const [submittedLocation, setSubmittedLocation] = useState('')
 
@@ -160,7 +162,7 @@ export default function Home() {
 
   function handleSaltwaterFetch() {
     if (!saltPin) return
-    fetchRecommendationByCoords(saltPin.lat, saltPin.lon, saltPin.name, targetSpecies)
+    fetchSaltwaterRecommendation(saltPin.lat, saltPin.lon, saltPin.name, targetSpecies)
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -276,7 +278,7 @@ export default function Home() {
       )}
 
       {/* ── Results ─────────────────────────────────────────────────────────── */}
-      {!loading && weather && <ConditionsBar conditions={weather} />}
+      {!loading && weather && <ConditionsBar conditions={weather} marine={marine} />}
       {!loading && recommendation && (
         <RecommendationCard recommendation={recommendation} location={submittedLocation} />
       )}
