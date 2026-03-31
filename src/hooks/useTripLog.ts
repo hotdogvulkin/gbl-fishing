@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
 import type { Trip, Catch } from '../types'
 
 // Map a Supabase row (snake_case) → our Trip interface (camelCase)
@@ -28,20 +29,32 @@ function mapCatch(row: Record<string, unknown>): Catch {
 }
 
 export function useTripLog() {
+  const { user } = useAuth()
   const [trips, setTrips] = useState<Trip[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Re-fetch whenever the logged-in user changes (login, logout, account switch)
   useEffect(() => {
     let cancelled = false
+
+    if (!user) {
+      // Not logged in — nothing to load; keep loading false so the UI renders
+      setTrips([])
+      setLoading(false)
+      return
+    }
 
     async function load() {
       setLoading(true)
       setError(null)
 
+      // RLS on the trips table ensures each user only sees their own rows,
+      // but we also filter explicitly to be defensive and avoid confusion.
       const { data, error: dbError } = await supabase
         .from('trips')
         .select('*, catches(*)')
+        .eq('user_id', user!.id)
         .order('created_at', { ascending: false })
 
       if (cancelled) return
@@ -58,13 +71,16 @@ export function useTripLog() {
 
     load()
     return () => { cancelled = true }
-  }, [])
+  }, [user?.id])  // eslint-disable-line react-hooks/exhaustive-deps
 
   async function saveTrip(trip: Trip): Promise<void> {
-    // 1. Insert the trip row — let the DB generate id and created_at
+    if (!user) throw new Error('Must be signed in to save a trip')
+
+    // 1. Insert the trip row with the authenticated user's ID
     const { data: tripRow, error: tripError } = await supabase
       .from('trips')
       .insert({
+        user_id: user.id,
         date: trip.date,
         lake: trip.lake,
         notes: trip.notes ?? null,
