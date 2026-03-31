@@ -77,25 +77,24 @@ function ModeToggle() {
   const { mode, setMode } = useMode()
   const isSaltwater = mode === 'saltwater'
 
+  // Active pill: crisp white+teal in freshwater, glowing blue in saltwater
+  const activeClass = isSaltwater
+    ? 'bg-teal-600/20 text-teal-600 ring-1 ring-teal-600/50 shadow-[0_0_12px_rgba(14,165,233,0.25)]'
+    : 'bg-white text-teal-600 shadow-sm'
+
+  const inactiveClass = 'text-gray-400 hover:text-gray-600'
+
   return (
     <div className="flex items-center bg-gray-100 rounded-xl p-0.5 text-xs font-semibold select-none">
       <button
         onClick={() => setMode('freshwater')}
-        className={`px-3 py-1.5 rounded-[10px] transition-colors ${
-          !isSaltwater
-            ? 'bg-white text-teal-600 shadow-sm'
-            : 'text-gray-400 hover:text-gray-600'
-        }`}
+        className={`px-3 py-1.5 rounded-[10px] ${!isSaltwater ? activeClass : inactiveClass}`}
       >
         Freshwater
       </button>
       <button
         onClick={() => setMode('saltwater')}
-        className={`px-3 py-1.5 rounded-[10px] transition-colors ${
-          isSaltwater
-            ? 'bg-white text-teal-600 shadow-sm'
-            : 'text-gray-400 hover:text-gray-600'
-        }`}
+        className={`px-3 py-1.5 rounded-[10px] ${isSaltwater ? activeClass : inactiveClass}`}
       >
         Saltwater
       </button>

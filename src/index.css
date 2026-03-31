@@ -2,47 +2,153 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Mode CSS variables ───────────────────────────────────────────────────────
-   Tailwind's teal-* classes reference these variables, so switching the
-   data-mode attribute on <html> changes the entire accent palette at once.
-   ─────────────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODE CSS VARIABLES
+   Tailwind's teal-* and gray-* palettes reference these variables.
+   Switching data-mode on <html> shifts the entire color scheme.
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Freshwater — teal */
-  --color-accent:      #0d9488;   /* teal-600 */
-  --color-accent-dark: #0f766e;   /* teal-700 */
-  --color-accent-500:  #14b8a6;   /* teal-500 */
-  --color-accent-300:  #5eead4;   /* teal-300 */
-  --color-accent-100:  #ccfbf1;   /* teal-100 */
-  --color-accent-50:   #f0fdfa;   /* teal-50  */
-  --color-bg:          #ffffff;
-  --color-surface:     #ffffff;
+  /* Freshwater — calm, bright, daytime lake */
+
+  /* Accent: teal */
+  --color-accent:      #0d9488;
+  --color-accent-dark: #0f766e;
+  --color-accent-500:  #14b8a6;
+  --color-accent-300:  #5eead4;
+  --color-accent-100:  #ccfbf1;
+  --color-accent-50:   #f0fdfa;
+
+  /* Backgrounds */
+  --color-bg:      #f9fafb;
+  --color-surface: #ffffff;
+
+  /* Gray scale — exact Tailwind defaults */
+  --color-gray-50:  #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
 }
 
 html[data-mode="saltwater"] {
-  /* Saltwater — deep ocean blue */
-  --color-accent:      #0369a1;   /* sky-700  */
-  --color-accent-dark: #075985;   /* sky-800  */
-  --color-accent-500:  #0ea5e9;   /* sky-500  */
-  --color-accent-300:  #7dd3fc;   /* sky-300  */
-  --color-accent-100:  #e0f2fe;   /* sky-100  */
-  --color-accent-50:   #f0f9ff;   /* sky-50   */
-  --color-bg:          #f0f4f8;
-  --color-surface:     #f8fafc;
+  /* Saltwater — dark, dramatic, nighttime ocean */
+
+  /* Accent: vivid sky blue */
+  --color-accent:      #0ea5e9;
+  --color-accent-dark: #0284c7;
+  --color-accent-500:  #38bdf8;
+  --color-accent-300:  #7dd3fc;
+  --color-accent-100:  #0d2a50;   /* dark tinted — for hover backgrounds */
+  --color-accent-50:   #081e38;   /* very dark blue tint */
+
+  /* Backgrounds */
+  --color-bg:      #0a1628;
+  --color-surface: #0f2035;
+
+  /* Gray scale — dark navy equivalents */
+  --color-gray-50:  #0d1f38;   /* skeleton shimmer, subtle hover */
+  --color-gray-100: #1e3a5f;   /* card borders */
+  --color-gray-200: #1e3a5f;   /* dividers, borders */
+  --color-gray-300: #2d4d72;   /* stronger borders */
+  --color-gray-400: #7aa0c4;   /* muted text, inactive icons */
+  --color-gray-500: #8fb6d0;   /* secondary text */
+  --color-gray-600: #a8c8e0;   /* body text */
+  --color-gray-700: #c2d9ec;   /* label text */
+  --color-gray-800: #dce9f4;   /* heading alt */
+  --color-gray-900: #f0f8ff;   /* primary text */
 }
 
-/* ── Smooth mode transitions ─────────────────────────────────────────────────
-   Apply to color-related properties only; leaves transform/opacity animations
-   (animate-spin, animate-pulse, pageEnter) completely untouched.
-   ─────────────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   SALTWATER OVERRIDES
+   bg-white can't be CSS-variablised without breaking text-white on buttons.
+   These selector overrides handle it with higher specificity than Tailwind.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Surface backgrounds (cards, inputs, dropdowns) */
+html[data-mode="saltwater"] .bg-white {
+  background-color: var(--color-surface);
+}
+
+/* Bottom nav: flush with page background for the "over the ocean" feeling */
+html[data-mode="saltwater"] nav.fixed {
+  background-color: var(--color-bg);
+  border-top-color: #1e3a5f;
+}
+
+/* Shadows: replace light-mode drop shadows with dark depth + subtle blue rim */
+html[data-mode="saltwater"] .shadow-sm {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(30, 58, 95, 0.9);
+}
+
+html[data-mode="saltwater"] .shadow-lg {
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(30, 58, 95, 0.8);
+}
+
+/* Recharts tooltip cursor highlight */
+html[data-mode="saltwater"] .recharts-rectangle.recharts-tooltip-cursor {
+  fill: #132a44;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIMATED OCEAN BACKGROUND
+   Slow shifting gradient that evokes depth and open water.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes oceanDrift {
+  0%   { background-position: 0% 0%;   }
+  25%  { background-position: 100% 0%;   }
+  50%  { background-position: 100% 100%; }
+  75%  { background-position: 0% 100%; }
+  100% { background-position: 0% 0%;   }
+}
+
+html[data-mode="saltwater"] body {
+  background-color: #0a1628;
+  background-image: linear-gradient(
+    160deg,
+    #0a1628 0%,
+    #0d2444 35%,
+    #071a30 65%,
+    #0a1e3a 100%
+  );
+  background-size: 300% 300%;
+  animation: oceanDrift 18s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SMOOTH MODE TRANSITIONS
+   Apply to color-related properties only — leaves transform/opacity/animation
+   completely untouched so animate-spin, animate-pulse, pageEnter still work.
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 *, *::before, *::after {
-  transition-property: color, background-color, border-color, fill, stroke, outline-color;
+  transition-property: color, background-color, border-color, fill, stroke, outline-color, box-shadow;
   transition-duration: 300ms;
   transition-timing-function: ease;
 }
 
-/* ── Global base ─────────────────────────────────────────────────────────────*/
+/* Exempt animated elements from color transitions to prevent interference */
+.animate-spin,
+.animate-pulse,
+.animate-bounce,
+.page-enter,
+.knot-fadein {
+  transition: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GLOBAL BASE
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 * {
   -webkit-font-smoothing: antialiased;
@@ -56,18 +162,15 @@ body {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Retained for fallback — primary knot transitions now use inline CSS transitions */
 @keyframes fadein { from { opacity: 0 } to { opacity: 1 } }
 .knot-fadein { animation: fadein 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 
-/* Page route transition — triggered by Layout keying on pathname */
 @keyframes pageEnter {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0);   }
 }
 .page-enter { animation: pageEnter 0.18s ease-out both; }
 
-/* Multi-line clamp utility */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

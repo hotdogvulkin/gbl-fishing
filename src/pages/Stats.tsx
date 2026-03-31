@@ -7,6 +7,7 @@ import {
 } from 'recharts'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useMode } from '../context/ModeContext'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -382,9 +383,12 @@ export default function Stats() {
   }
 
   // ── Stats display ─────────────────────────────────────────────────────────
-  const teal = '#0d9488'
-  const gridColor = '#f1f5f9'
-  const tickStyle = { fontSize: 11, fill: '#94a3b8' }
+  const { mode } = useMode()
+  const isSaltwater = mode === 'saltwater'
+  const chartAccent = isSaltwater ? '#0ea5e9' : '#0d9488'
+  const gridColor   = isSaltwater ? '#1e3a5f' : '#f1f5f9'
+  const cursorFill  = isSaltwater ? '#132a44' : '#f8fafc'
+  const tickStyle   = { fontSize: 11, fill: isSaltwater ? '#7aa0c4' : '#94a3b8' }
 
   return (
     <div className="pt-6 pb-4">
@@ -430,8 +434,8 @@ export default function Stats() {
                   axisLine={false}
                   tickLine={false}
                 />
-                <Tooltip content={<ChartTooltip />} cursor={{ fill: '#f8fafc' }} />
-                <Bar dataKey="catches" fill={teal} radius={[0, 4, 4, 0]} maxBarSize={20} />
+                <Tooltip content={<ChartTooltip />} cursor={{ fill: cursorFill }} />
+                <Bar dataKey="catches" fill={chartAccent} radius={[0, 4, 4, 0]} maxBarSize={20} />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -451,10 +455,10 @@ export default function Stats() {
               <Line
                 type="monotone"
                 dataKey="catches"
-                stroke={teal}
+                stroke={chartAccent}
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, fill: teal }}
+                activeDot={{ r: 4, fill: chartAccent }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -479,8 +483,8 @@ export default function Stats() {
                   axisLine={false}
                   tickLine={false}
                 />
-                <Tooltip content={<ChartTooltip />} cursor={{ fill: '#f8fafc' }} />
-                <Bar dataKey="catches" fill={teal} radius={[0, 4, 4, 0]} maxBarSize={20} />
+                <Tooltip content={<ChartTooltip />} cursor={{ fill: cursorFill }} />
+                <Bar dataKey="catches" fill={chartAccent} radius={[0, 4, 4, 0]} maxBarSize={20} />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
