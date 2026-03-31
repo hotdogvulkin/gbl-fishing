@@ -17,3 +17,18 @@ body {
 /* Retained for fallback — primary knot transitions now use inline CSS transitions */
 @keyframes fadein { from { opacity: 0 } to { opacity: 1 } }
 .knot-fadein { animation: fadein 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* Page route transition — triggered by Layout keying on pathname */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+.page-enter { animation: pageEnter 0.18s ease-out both; }
+
+/* Multi-line clamp utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -35,16 +35,39 @@ export default function TripLog() {
       )}
 
       {!loading && !error && trips.length === 0 && (
-        <div className="px-4 mt-16 flex flex-col items-center text-center">
-          <span className="text-5xl mb-4">📒</span>
-          <h2 className="text-base font-semibold text-gray-800 mb-1">No trips yet</h2>
-          <p className="text-sm text-gray-500 max-w-xs mb-6">
-            Head out and log your first trip — track your catches and build your history over time.
+        <div className="px-6 mt-10 flex flex-col items-center text-center">
+          {/* Illustration */}
+          <div className="w-32 h-32 rounded-full bg-teal-50 flex items-center justify-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none" className="w-20 h-20">
+              {/* Water ripples */}
+              <ellipse cx="40" cy="58" rx="28" ry="6" stroke="#99f6e4" strokeWidth="2" />
+              <ellipse cx="40" cy="58" rx="18" ry="4" stroke="#5eead4" strokeWidth="1.5" />
+              {/* Fishing rod */}
+              <line x1="18" y1="20" x2="56" y2="38" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" />
+              {/* Rod handle */}
+              <rect x="12" y="16" width="10" height="6" rx="3" fill="#0d9488" />
+              {/* Fishing line */}
+              <path d="M56 38 Q62 44 56 52 Q52 58 50 58" stroke="#94a3b8" strokeWidth="1" strokeDasharray="2 2" fill="none" />
+              {/* Hook */}
+              <path d="M50 58 Q50 64 45 64 Q41 64 41 60" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+              {/* Fish */}
+              <ellipse cx="34" cy="48" rx="9" ry="5.5" fill="#5eead4" />
+              <path d="M25 48 L20 44 L20 52 Z" fill="#5eead4" />
+              <circle cx="39" cy="46" r="1.2" fill="#0f172a" />
+            </svg>
+          </div>
+
+          <h2 className="text-lg font-bold text-gray-900 mb-2">Start your log</h2>
+          <p className="text-sm text-gray-500 max-w-[260px] leading-relaxed mb-7">
+            Track your catches, remember what worked, and watch your history grow trip by trip.
           </p>
           <Link
             to="/log/new"
-            className="text-sm font-semibold text-white bg-teal-600 px-6 py-3 rounded-xl"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-teal-600 px-6 py-3 rounded-xl shadow-sm active:bg-teal-700"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+              <path fillRule="evenodd" d="M10 3a.75.75 0 01.75.75v5.5h5.5a.75.75 0 010 1.5h-5.5v5.5a.75.75 0 01-1.5 0v-5.5H3.75a.75.75 0 010-1.5h5.5V3.75A.75.75 0 0110 3z" clipRule="evenodd" />
+            </svg>
             Log Your First Trip
           </Link>
         </div>

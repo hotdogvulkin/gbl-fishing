@@ -1,4 +1,4 @@
-import type { WeatherConditions, Recommendation } from '../types'
+import type { WeatherConditions, Recommendation, FishIdentification } from '../types'
 
 export async function getRecommendation(
   location: string,
@@ -77,5 +77,76 @@ Respond with the JSON recommendation only.`
     return JSON.parse(text) as Recommendation
   } catch {
     throw new Error('Claude returned invalid JSON — try again')
+  }
+}
+
+// ─── Fish Identifier ──────────────────────────────────────────────────────────
+
+// Shared helper — returns [url, headers] for an Anthropic API call
+function anthropicFetch(body: unknown): Promise<Response> {
+  const isDev = import.meta.env.DEV
+  const [url, headers]: [string, Record<string, string>] = isDev
+    ? [
+        '/api/anthropic/v1/messages',
+        {
+          'Content-Type': 'application/json',
+          'x-api-key': import.meta.env.VITE_ANTHROPIC_API_KEY as string,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+      ]
+    : [
+        '/api/identify',
+        { 'Content-Type': 'application/json' },
+      ]
+
+  return fetch(url, { method: 'POST', headers, body: JSON.stringify(body) })
+}
+
+// base64Data should be the raw base64 string (no data: URI prefix)
+export async function identifyFish(
+  base64Data: string,
+  mediaType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
+): Promise<FishIdentification> {
+  const res = await anthropicFetch({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 256,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: { type: 'base64', media_type: mediaType, data: base64Data },
+          },
+          {
+            type: 'text',
+            text: `Identify the fish species in this image. Respond with ONLY a valid JSON object — no markdown, no explanation:
+
+{
+  "species": "common name of the fish (empty string if unidentifiable)",
+  "confidence": "high" | "medium" | "low",
+  "description": "one sentence about this species relevant to fishing"
+}
+
+Use confidence "low" and empty species if the image is unclear, not a fish, or you cannot identify it with reasonable certainty.`,
+          },
+        ],
+      },
+    ],
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error((err as { error?: { message?: string } }).error?.message ?? 'Identification failed')
+  }
+
+  const data = await res.json()
+  const text: string = data.content[0].text.trim()
+
+  try {
+    return JSON.parse(text) as FishIdentification
+  } catch {
+    return { species: '', confidence: 'low', description: 'Could not parse response.' }
   }
 }

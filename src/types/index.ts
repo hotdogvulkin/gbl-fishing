@@ -42,3 +42,9 @@ export interface Recommendation {
   reasoning: string
   rating: FishingRating
 }
+
+export interface FishIdentification {
+  species: string       // empty string if unidentifiable
+  confidence: 'high' | 'medium' | 'low'
+  description: string
+}
