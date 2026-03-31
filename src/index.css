@@ -114,14 +114,23 @@ html[data-mode="saltwater"] .recharts-rectangle.recharts-tooltip-cursor {
 
 html[data-mode="saltwater"] body {
   background-color: #0a1628;
-  background-image: linear-gradient(
-    160deg,
-    #0a1628 0%,
-    #0d2444 35%,
-    #071a30 65%,
-    #0a1e3a 100%
-  );
-  background-size: 300% 300%;
+  background-image:
+    /* Radial glow: deep blue light source filtering from top center,
+       like bioluminescence or surface light in deep water */
+    radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      rgba(14, 100, 180, 0.28) 0%,
+      transparent 70%
+    ),
+    /* Slow-shifting base gradient for the ocean drift animation */
+    linear-gradient(
+      160deg,
+      #0a1628 0%,
+      #0d2444 35%,
+      #071a30 65%,
+      #0a1e3a 100%
+    );
+  background-size: auto, 300% 300%;
   animation: oceanDrift 18s ease-in-out infinite;
 }
 

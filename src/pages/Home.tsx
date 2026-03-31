@@ -176,9 +176,30 @@ export default function Home() {
       {/* Empty state */}
       {!loading && !recommendation && !error && (
         <div className="px-4 mt-10 flex flex-col items-center text-center">
-          <span className="text-5xl mb-4">🎣</span>
+          {mode === 'saltwater' ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 48 48"
+              fill="none"
+              className="w-14 h-14 mb-4 text-teal-600 opacity-70"
+              aria-hidden="true"
+            >
+              {/* Anchor */}
+              <circle cx="24" cy="12" r="5" stroke="currentColor" strokeWidth="2.5" />
+              <line x1="24" y1="17" x2="24" y2="40" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M10 24 C10 34 38 34 38 24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+              <line x1="10" y1="24" x2="10" y2="32" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="38" y1="24" x2="38" y2="32" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+              {/* Crossbar */}
+              <line x1="16" y1="12" x2="32" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <span className="text-5xl mb-4">🎣</span>
+          )}
           <p className="text-gray-500 text-sm max-w-xs">
-            Enter a lake or city above to get a real-time fishing recommendation based on current weather and moon phase.
+            {mode === 'saltwater'
+              ? 'Enter your launch point to get offshore conditions and recommendations.'
+              : 'Enter a lake or city above to get a real-time fishing recommendation based on current weather and moon phase.'}
           </p>
         </div>
       )}
