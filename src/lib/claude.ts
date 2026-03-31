@@ -2,7 +2,8 @@ import type { WeatherConditions, Recommendation, FishIdentification } from '../t
 
 export async function getRecommendation(
   location: string,
-  weather: WeatherConditions
+  weather: WeatherConditions,
+  targetSpecies?: string
 ): Promise<Recommendation> {
 
   const systemPrompt = `You are an expert fishing guide with deep knowledge of freshwater and saltwater fish behavior, seasonal patterns, weather effects, and fishing techniques.
@@ -31,7 +32,11 @@ Current conditions:
 - Cloud cover: ${weather.cloudCoverPct}%
 - Barometric pressure: ${weather.pressureHpa} hPa
 - Sky: ${weather.description}
-- Moon: ${weather.moonPhase.name} (${Math.round(weather.moonPhase.illumination * 100)}% illuminated)
+- Moon: ${weather.moonPhase.name} (${Math.round(weather.moonPhase.illumination * 100)}% illuminated)${
+  targetSpecies && targetSpecies !== 'Any species'
+    ? `\n- Target species: ${targetSpecies}`
+    : ''
+}
 
 Respond with the JSON recommendation only.`
 

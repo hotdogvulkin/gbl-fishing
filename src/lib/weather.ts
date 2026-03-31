@@ -54,10 +54,8 @@ async function geocode(location: string): Promise<{ lat: number; lon: number }> 
   return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) }
 }
 
-// Step 2 — fetch current weather from Open-Meteo (no API key required)
-export async function fetchWeather(location: string): Promise<WeatherConditions> {
-  const { lat, lon } = await geocode(location)
-
+// Shared Open-Meteo fetch — used by both text and coordinate flows
+async function fetchWeatherAtCoords(lat: number, lon: number): Promise<WeatherConditions> {
   const url =
     `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${lat}&longitude=${lon}` +
@@ -78,4 +76,15 @@ export async function fetchWeather(location: string): Promise<WeatherConditions>
     description: describeWeatherCode(c.weathercode),
     moonPhase: calculateMoonPhase(),
   }
+}
+
+// Text-based flow — geocodes location string first, then fetches weather
+export async function fetchWeather(location: string): Promise<WeatherConditions> {
+  const { lat, lon } = await geocode(location)
+  return fetchWeatherAtCoords(lat, lon)
+}
+
+// Map-based flow — coordinates already known, skips geocoding entirely
+export async function fetchWeatherByCoords(lat: number, lon: number): Promise<WeatherConditions> {
+  return fetchWeatherAtCoords(lat, lon)
 }
