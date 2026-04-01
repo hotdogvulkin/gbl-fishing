@@ -81,15 +81,15 @@ export default function BottomNav() {
           to={to}
           end={end}
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center flex-1 pt-2 pb-3 gap-0.5 text-[10px] font-medium transition-colors min-h-[56px] ${
-              isActive ? 'text-teal-600' : 'text-gray-400'
+            `flex flex-col items-center justify-center flex-1 pt-1.5 pb-3 gap-1 text-[11px] font-medium uppercase tracking-[0.08em] transition-colors min-h-[56px] border-t-2 ${
+              isActive ? 'text-teal-600 border-teal-600' : 'text-gray-400 border-transparent'
             }`
           }
         >
           {({ isActive }) => (
             <>
               <Icon />
-              <span className={isActive ? 'text-teal-600' : 'text-gray-400'}>{label}</span>
+              <span>{label}</span>
             </>
           )}
         </NavLink>

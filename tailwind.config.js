@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
       colors: {
         // Override teal with CSS variables → every teal-* class responds to
         // the freshwater/saltwater mode switch with no component changes.

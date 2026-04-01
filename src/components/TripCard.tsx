@@ -20,7 +20,7 @@ export default function TripCard({ trip }: Props) {
     : trip.notes
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-4">
+    <div className="bg-white rounded-md border border-gray-100 px-4 py-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h2 className="text-base font-semibold text-gray-900 truncate">{trip.lake}</h2>

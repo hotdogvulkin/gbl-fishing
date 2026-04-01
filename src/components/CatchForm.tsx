@@ -108,7 +108,7 @@ export default function CatchForm({ onAdd, onCancel }: Props) {
   }
 
   const inputClass =
-    'w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent'
+    'w-full bg-gray-50 border border-gray-200 rounded-md px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent'
 
   const confidencePill = (confidence: 'high' | 'medium' | 'low') => {
     const map = {
@@ -122,7 +122,7 @@ export default function CatchForm({ onAdd, onCancel }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3"
+      className="bg-gray-50 border border-gray-200 rounded-md p-4 space-y-3"
     >
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-gray-700">New Catch</p>
@@ -132,7 +132,7 @@ export default function CatchForm({ onAdd, onCancel }: Props) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={identify.status === 'loading'}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-600 bg-teal-50 hover:bg-teal-100 disabled:opacity-50 px-2.5 py-1.5 rounded-lg transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-600 bg-teal-50 hover:bg-teal-100 disabled:opacity-50 px-2.5 py-1.5 rounded-md transition-colors"
           title="Identify fish from photo"
         >
           {identify.status === 'loading' ? (

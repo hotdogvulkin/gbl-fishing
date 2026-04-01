@@ -35,7 +35,7 @@ export default function KnotDetail() {
           </div>
 
           {/* Why this knot */}
-          <div className="bg-teal-50 border border-teal-100 rounded-2xl p-4">
+          <div className="bg-teal-50 border border-teal-100 rounded-md p-4">
             <p className="text-xs font-semibold text-teal-600 uppercase tracking-wide mb-2">Why this knot</p>
             {reason && (
               <p className="text-sm font-medium text-teal-800 mb-2">{reason}</p>
@@ -47,7 +47,7 @@ export default function KnotDetail() {
           <KnotAnimation knotSlug={knotName ?? ''} />
 
           {/* Steps */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+          <div className="bg-white rounded-md border border-gray-100 p-4">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">How to tie it</p>
             <ol className="space-y-4">
               {knot.steps.map((step, i) => (
@@ -62,7 +62,7 @@ export default function KnotDetail() {
           </div>
 
           {/* Tips */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+          <div className="bg-white rounded-md border border-gray-100 p-4">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Tips &amp; common mistakes</p>
             <ul className="space-y-3">
               {knot.tips.map((tip, i) => (
@@ -86,13 +86,13 @@ export default function KnotDetail() {
           </h1>
 
           {reason && (
-            <div className="bg-teal-50 border border-teal-100 rounded-2xl p-4">
+            <div className="bg-teal-50 border border-teal-100 rounded-md p-4">
               <p className="text-xs font-semibold text-teal-600 uppercase tracking-wide mb-2">Why this knot</p>
               <p className="text-sm text-teal-700 leading-relaxed">{reason}</p>
             </div>
           )}
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+          <div className="bg-white rounded-md border border-gray-100 p-4">
             <p className="text-sm text-gray-500 leading-relaxed">
               Detailed step-by-step instructions for this knot are coming soon. In the meantime, a quick search for <span className="font-medium text-gray-700">"{knotName?.replace(/-/g, ' ')}"</span> will turn up plenty of good video tutorials.
             </p>

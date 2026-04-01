@@ -35,13 +35,17 @@ function PhotoThumbnail({ query }: { query: string }) {
   }, [query])
 
   if (loading) {
-    return <div className="w-20 h-20 rounded-xl bg-gray-100 animate-pulse flex-shrink-0" />
+    return <div className="w-20 h-20 rounded-md bg-gray-100 animate-pulse flex-shrink-0" />
   }
 
   if (!src || failed) {
     return (
-      <div className="w-20 h-20 rounded-xl bg-gray-100 flex-shrink-0 flex items-center justify-center">
-        <span className="text-2xl">🐟</span>
+      <div className="w-20 h-20 rounded-md bg-gray-100 flex-shrink-0 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 text-gray-300">
+          <path d="M6.5 12C6.5 8.5 9.3 6 13.2 6C17.1 6 21 8.7 21 12C21 15.3 17.1 18 13.2 18C9.3 18 6.5 15.5 6.5 12Z" />
+          <path d="M6.5 12L3.5 8.5M6.5 12L3.5 15.5" />
+          <circle cx="17" cy="10.2" r="1" fill="currentColor" stroke="none" />
+        </svg>
       </div>
     )
   }
@@ -51,7 +55,7 @@ function PhotoThumbnail({ query }: { query: string }) {
       src={src}
       alt=""
       onError={() => setFailed(true)}
-      className="w-20 h-20 rounded-xl object-cover flex-shrink-0 bg-gray-100"
+      className="w-20 h-20 rounded-md object-cover flex-shrink-0 bg-gray-100"
     />
   )
 }
@@ -62,7 +66,7 @@ function SpeciesCard({ species }: { species: Species }) {
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-md border border-gray-100 overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded(e => !e)}
@@ -97,11 +101,11 @@ function SpeciesCard({ species }: { species: Species }) {
             <p className="text-sm text-gray-600 leading-relaxed">{species.description}</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-50 rounded-xl p-3">
+            <div className="bg-gray-50 rounded-md p-3">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Average Size</p>
               <p className="text-sm text-gray-700 leading-snug">{species.averageSize}</p>
             </div>
-            <div className="bg-gray-50 rounded-xl p-3">
+            <div className="bg-gray-50 rounded-md p-3">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">FL Record</p>
               <p className="text-sm text-gray-700 leading-snug">{species.floridaRecord}</p>
             </div>
@@ -134,7 +138,7 @@ function SpeciesCard({ species }: { species: Species }) {
 
 function StatBlock({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-gray-50 rounded-xl p-3">
+    <div className="bg-gray-50 rounded-md p-3">
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">{label}</p>
       <p className="text-sm text-gray-700 leading-snug">{value}</p>
     </div>
@@ -145,7 +149,7 @@ function SaltwaterSpeciesCard({ species }: { species: SaltwaterSpecies }) {
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-md border border-gray-100 overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded(e => !e)}
@@ -199,17 +203,17 @@ function SaltwaterSpeciesCard({ species }: { species: SaltwaterSpecies }) {
 
           {/* Technical — feeding time + trolling speed */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-blue-50 rounded-xl p-3">
+            <div className="bg-blue-50 rounded-md p-3">
               <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1">Peak Feeding</p>
               <p className="text-sm text-blue-800 leading-snug">{species.feedingTime}</p>
             </div>
             {species.trollingSpeedKts ? (
-              <div className="bg-blue-50 rounded-xl p-3">
+              <div className="bg-blue-50 rounded-md p-3">
                 <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1">Trolling Speed</p>
                 <p className="text-sm text-blue-800 leading-snug">{species.trollingSpeedKts}</p>
               </div>
             ) : (
-              <div className="bg-gray-50 rounded-xl p-3">
+              <div className="bg-gray-50 rounded-md p-3">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Technique</p>
                 <p className="text-sm text-gray-600 leading-snug">Bottom / structure fishing</p>
               </div>
@@ -283,7 +287,7 @@ export default function SpeciesPage() {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search species…"
-            className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
+            className="w-full bg-white border border-gray-200 rounded-md pl-10 pr-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
           />
           {query && (
             <button
@@ -309,7 +313,9 @@ export default function SpeciesPage() {
           </div>
         ) : (
           <div className="px-4 mt-12 flex flex-col items-center text-center">
-            <span className="text-4xl mb-3">🔍</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-8 h-8 mb-3 text-gray-300">
+              <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
+            </svg>
             <p className="text-sm text-gray-500">No species matching "{query}"</p>
             <button onClick={() => setQuery('')} className="mt-3 text-sm font-medium text-teal-600">
               Clear search
@@ -325,7 +331,9 @@ export default function SpeciesPage() {
           </div>
         ) : (
           <div className="px-4 mt-12 flex flex-col items-center text-center">
-            <span className="text-4xl mb-3">🔍</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-8 h-8 mb-3 text-gray-300">
+              <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
+            </svg>
             <p className="text-sm text-gray-500">No species matching "{query}"</p>
             <button onClick={() => setQuery('')} className="mt-3 text-sm font-medium text-teal-600">
               Clear search

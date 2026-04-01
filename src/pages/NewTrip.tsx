@@ -53,7 +53,7 @@ export default function NewTrip() {
   }
 
   const inputClass =
-    'w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent'
+    'w-full bg-white border border-gray-200 rounded-md px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent'
 
   return (
     <div className="pt-6 pb-8">
@@ -63,7 +63,7 @@ export default function NewTrip() {
 
       <form onSubmit={handleSubmit} className="px-4 space-y-4">
         {/* Trip details */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-4">
+        <div className="bg-white rounded-md border border-gray-100 p-4 space-y-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Trip Details</p>
 
           <div>
@@ -102,7 +102,7 @@ export default function NewTrip() {
         </div>
 
         {/* Catches */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
+        <div className="bg-white rounded-md border border-gray-100 p-4 space-y-3">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Catches</p>
 
           {catches.length === 0 && !showCatchForm && (
@@ -112,7 +112,7 @@ export default function NewTrip() {
           {catches.map(c => (
             <div
               key={c.id}
-              className="flex items-start justify-between gap-2 bg-gray-50 rounded-xl px-3 py-3 border border-gray-100"
+              className="flex items-start justify-between gap-2 bg-gray-50 rounded-md px-3 py-3 border border-gray-100"
             >
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-gray-800">{c.species}</p>
@@ -140,7 +140,7 @@ export default function NewTrip() {
             <button
               type="button"
               onClick={() => setShowCatchForm(true)}
-              className="w-full py-2.5 rounded-xl border border-dashed border-teal-300 text-sm font-medium text-teal-600 hover:bg-teal-50 transition-colors"
+              className="w-full py-2.5 rounded-md border border-dashed border-teal-300 text-sm font-medium text-teal-600 hover:bg-teal-50 transition-colors"
             >
               + Add Catch
             </button>
@@ -148,7 +148,7 @@ export default function NewTrip() {
         </div>
 
         {saveError && (
-          <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+          <div className="bg-red-50 border border-red-100 rounded-md px-4 py-3">
             <p className="text-sm text-red-700">{saveError}</p>
           </div>
         )}
@@ -157,7 +157,7 @@ export default function NewTrip() {
         <button
           type="submit"
           disabled={!lake.trim() || saving}
-          className="w-full py-3.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl shadow-sm transition-colors"
+          className="w-full py-3.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-md shadow-sm transition-colors"
         >
           {saving ? 'Saving…' : 'Save Trip'}
         </button>

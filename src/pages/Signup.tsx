@@ -55,7 +55,7 @@ export default function Signup() {
   const [stage, setStage] = useState<Stage>({ name: 'form' })
 
   const inputClass =
-    'w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent'
+    'w-full bg-white border border-gray-200 rounded-md px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent'
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -112,7 +112,7 @@ export default function Signup() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center px-4 py-12">
         <div className="w-full max-w-sm mx-auto">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+          <div className="bg-white rounded-md shadow-sm border border-gray-100 p-8 text-center">
             <div className="w-14 h-14 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 text-teal-600">
                 <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
@@ -143,8 +143,12 @@ export default function Signup() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center px-4 py-12">
         <div className="w-full max-w-sm mx-auto">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
-            <span className="text-4xl block mb-4">📂</span>
+          <div className="bg-white rounded-md border border-gray-100 p-6 text-center">
+            <div className="flex justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10 text-gray-300">
+                <path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z" />
+              </svg>
+            </div>
             <h2 className="text-lg font-bold text-gray-900 mb-2">
               You have {tripCount} {tripCount === 1 ? 'trip' : 'trips'} saved locally
             </h2>
@@ -154,13 +158,13 @@ export default function Signup() {
             <div className="flex gap-3">
               <button
                 onClick={handleMigrateNo}
-                className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-600"
+                className="flex-1 py-3 rounded-md border border-gray-200 text-sm font-medium text-gray-600"
               >
                 No thanks
               </button>
               <button
                 onClick={() => handleMigrateYes(userId)}
-                className="flex-1 py-3 rounded-xl bg-teal-600 text-sm font-semibold text-white"
+                className="flex-1 py-3 rounded-md bg-teal-600 text-sm font-semibold text-white"
               >
                 Yes, save them
               </button>
@@ -190,15 +194,17 @@ export default function Signup() {
       <div className="w-full max-w-sm mx-auto">
         {/* App identity */}
         <div className="text-center mb-8">
-          <div className="text-4xl mb-2">🎣</div>
-          <h1 className="text-2xl font-bold text-gray-900">GBL Fishing</h1>
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-teal-600 mb-3">
+            <span className="text-white text-xs font-bold tracking-tight">GBL</span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-[-0.02em] text-gray-900">GBL Fishing</h1>
           <p className="text-sm text-gray-500 mt-1">Create your account</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+        <div className="bg-white rounded-md shadow-sm border border-gray-100 p-6 space-y-4">
           {/* Error */}
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">
+            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">
               {error}
             </p>
           )}
@@ -244,7 +250,7 @@ export default function Signup() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-semibold rounded-xl transition-colors mt-1"
+              className="w-full py-3 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-semibold rounded-md transition-colors mt-1"
             >
               {submitting ? 'Creating account…' : 'Create account'}
             </button>

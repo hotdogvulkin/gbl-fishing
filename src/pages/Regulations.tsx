@@ -38,7 +38,7 @@ function RegCard({ reg }: { reg: Regulation }) {
     : reg.dailyBag
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-md border border-gray-100 overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded(e => !e)}
@@ -48,7 +48,6 @@ function RegCard({ reg }: { reg: Regulation }) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-2.5">
-              <span className="text-xl">{reg.emoji}</span>
               <h2 className="text-base font-semibold text-gray-900">{reg.species}</h2>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -112,7 +111,7 @@ function SaltwaterRegCard({ reg }: { reg: SaltwaterRegulation }) {
   const jStyle = JURISDICTION_STYLES[reg.jurisdiction]
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-md border border-gray-100 overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded(e => !e)}
@@ -122,7 +121,6 @@ function SaltwaterRegCard({ reg }: { reg: SaltwaterRegulation }) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-2.5">
-              <span className="text-xl">{reg.emoji}</span>
               <h2 className="text-base font-semibold text-gray-900">{reg.species}</h2>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -186,12 +184,11 @@ export default function Regulations() {
       </div>
 
       {/* Ruleset indicator */}
-      <div className={`mx-4 mb-4 rounded-xl px-4 py-3 flex items-center gap-3 ${
+      <div className={`mx-4 mb-4 rounded-md px-4 py-3 flex items-center gap-3 ${
         isSaltwater
           ? 'bg-indigo-50 border border-indigo-100'
           : 'bg-teal-50 border border-teal-100'
       }`}>
-        <span className="text-xl flex-shrink-0">{isSaltwater ? '🌊' : '🏞️'}</span>
         <div className="min-w-0">
           <p className={`text-sm font-semibold ${isSaltwater ? 'text-indigo-800' : 'text-teal-800'}`}>
             {isSaltwater ? 'Florida Offshore — NOAA Federal Rules' : 'Florida Freshwater — FWC Rules'}
@@ -215,7 +212,7 @@ export default function Regulations() {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search species…"
-            className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
+            className="w-full bg-white border border-gray-200 rounded-md pl-10 pr-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
           />
           {query && (
             <button
@@ -232,7 +229,7 @@ export default function Regulations() {
       </div>
 
       {/* Disclaimer banner */}
-      <div className="mx-4 mb-4 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 flex gap-2.5">
+      <div className="mx-4 mb-4 bg-amber-50 border border-amber-100 rounded-md px-4 py-3 flex gap-2.5">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5">
           <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
         </svg>
@@ -254,7 +251,9 @@ export default function Regulations() {
           </div>
         ) : (
           <div className="px-4 mt-12 flex flex-col items-center text-center">
-            <span className="text-4xl mb-3">🔍</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-8 h-8 mb-3 text-gray-300">
+              <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
+            </svg>
             <p className="text-sm text-gray-500">No results for "{query}"</p>
             <button onClick={() => setQuery('')} className="mt-3 text-sm font-medium text-teal-600">
               Clear search
@@ -270,7 +269,9 @@ export default function Regulations() {
           </div>
         ) : (
           <div className="px-4 mt-12 flex flex-col items-center text-center">
-            <span className="text-4xl mb-3">🔍</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-8 h-8 mb-3 text-gray-300">
+              <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
+            </svg>
             <p className="text-sm text-gray-500">No results for "{query}"</p>
             <button onClick={() => setQuery('')} className="mt-3 text-sm font-medium text-teal-600">
               Clear search

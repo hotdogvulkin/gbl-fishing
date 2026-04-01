@@ -4,104 +4,82 @@
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODE CSS VARIABLES
-   Tailwind's teal-* and gray-* palettes reference these variables.
+   Tailwind teal-* and gray-* classes reference these variables.
    Switching data-mode on <html> shifts the entire color scheme.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Freshwater — calm, bright, daytime lake */
+  /* Freshwater — off-white, clean, restrained */
 
-  /* Accent: teal */
-  --color-accent:      #0d9488;
+  --color-accent:      #0D9488;
   --color-accent-dark: #0f766e;
   --color-accent-500:  #14b8a6;
   --color-accent-300:  #5eead4;
-  --color-accent-100:  #ccfbf1;
-  --color-accent-50:   #f0fdfa;
+  --color-accent-100:  #F0FDFA;
+  --color-accent-50:   #F0FDFA;
 
-  /* Backgrounds */
-  --color-bg:      #f9fafb;
-  --color-surface: #ffffff;
+  --color-bg:      #FAFAFA;
+  --color-surface: #FFFFFF;
 
-  /* Gray scale — exact Tailwind defaults */
-  --color-gray-50:  #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
+  --color-gray-50:  #F9FAFB;
+  --color-gray-100: #F3F4F6;
+  --color-gray-200: #E5E7EB;
+  --color-gray-300: #D1D5DB;
+  --color-gray-400: #9CA3AF;
+  --color-gray-500: #6B7280;
+  --color-gray-600: #4B5563;
   --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
+  --color-gray-800: #1F2937;
   --color-gray-900: #111827;
 }
 
 html[data-mode="saltwater"] {
-  /* Saltwater — dark, dramatic, nighttime ocean */
+  /* Saltwater — deep ocean, night water */
 
-  /* Accent: vivid sky blue */
-  --color-accent:      #0ea5e9;
-  --color-accent-dark: #0284c7;
-  --color-accent-500:  #38bdf8;
+  --color-accent:      #38BDF8;
+  --color-accent-dark: #0ea5e9;
+  --color-accent-500:  #38BDF8;
   --color-accent-300:  #7dd3fc;
-  --color-accent-100:  #0d2a50;   /* dark tinted — for hover backgrounds */
-  --color-accent-50:   #081e38;   /* very dark blue tint */
+  --color-accent-100:  #0D1B2E;
+  --color-accent-50:   #080F1A;
 
-  /* Backgrounds */
-  --color-bg:      #0a1628;
-  --color-surface: #0f2035;
+  --color-bg:      #080F1A;
+  --color-surface: #0D1B2E;
 
-  /* Gray scale — dark navy equivalents */
-  --color-gray-50:  #0d1f38;   /* skeleton shimmer, subtle hover */
-  --color-gray-100: #1e3a5f;   /* card borders */
-  --color-gray-200: #1e3a5f;   /* dividers, borders */
-  --color-gray-300: #2d4d72;   /* stronger borders */
-  --color-gray-400: #7aa0c4;   /* muted text, inactive icons */
-  --color-gray-500: #8fb6d0;   /* secondary text */
-  --color-gray-600: #a8c8e0;   /* body text */
-  --color-gray-700: #c2d9ec;   /* label text */
-  --color-gray-800: #dce9f4;   /* heading alt */
-  --color-gray-900: #f0f8ff;   /* primary text */
+  --color-gray-50:  #0D1B2E;
+  --color-gray-100: #1A2F4A;
+  --color-gray-200: #1A2F4A;
+  --color-gray-300: #2a4060;
+  --color-gray-400: #7aa0c4;
+  --color-gray-500: #94A3B8;
+  --color-gray-600: #a8c8e0;
+  --color-gray-700: #C0D8EC;
+  --color-gray-800: #D8ECF8;
+  --color-gray-900: #F1F5F9;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SALTWATER OVERRIDES
    bg-white can't be CSS-variablised without breaking text-white on buttons.
-   These selector overrides handle it with higher specificity than Tailwind.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Surface backgrounds (cards, inputs, dropdowns) */
 html[data-mode="saltwater"] .bg-white {
   background-color: var(--color-surface);
 }
 
-/* Bottom nav: flush with page background for the "over the ocean" feeling */
 html[data-mode="saltwater"] nav.fixed {
   background-color: var(--color-bg);
-  border-top-color: #1e3a5f;
+  border-top-color: #1A2F4A;
 }
 
-/* Shadows: replace light-mode drop shadows with dark depth + subtle blue rim */
 html[data-mode="saltwater"] .shadow-sm {
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(30, 58, 95, 0.9);
-}
-
-html[data-mode="saltwater"] .shadow-lg {
-  box-shadow:
-    0 8px 28px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(30, 58, 95, 0.8);
-}
-
-/* Recharts tooltip cursor highlight */
-html[data-mode="saltwater"] .recharts-rectangle.recharts-tooltip-cursor {
-  fill: #132a44;
+    0 0 0 1px rgba(26, 47, 74, 0.9);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    ANIMATED OCEAN BACKGROUND
-   Slow shifting gradient that evokes depth and open water.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @keyframes oceanDrift {
@@ -113,31 +91,26 @@ html[data-mode="saltwater"] .recharts-rectangle.recharts-tooltip-cursor {
 }
 
 html[data-mode="saltwater"] body {
-  background-color: #0a1628;
+  background-color: #080F1A;
   background-image:
-    /* Radial glow: deep blue light source filtering from top center,
-       like bioluminescence or surface light in deep water */
     radial-gradient(
       ellipse 80% 50% at 50% -10%,
-      rgba(14, 100, 180, 0.28) 0%,
+      rgba(14, 100, 180, 0.22) 0%,
       transparent 70%
     ),
-    /* Slow-shifting base gradient for the ocean drift animation */
     linear-gradient(
       160deg,
-      #0a1628 0%,
-      #0d2444 35%,
-      #071a30 65%,
-      #0a1e3a 100%
+      #080F1A 0%,
+      #0D1B2E 35%,
+      #060E18 65%,
+      #0a1628 100%
     );
   background-size: auto, 300% 300%;
   animation: oceanDrift 18s ease-in-out infinite;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SMOOTH MODE TRANSITIONS
-   Apply to color-related properties only — leaves transform/opacity/animation
-   completely untouched so animate-spin, animate-pulse, pageEnter still work.
+   SMOOTH MODE TRANSITIONS — color properties only
    ═══════════════════════════════════════════════════════════════════════════ */
 
 *, *::before, *::after {
@@ -146,7 +119,6 @@ html[data-mode="saltwater"] body {
   transition-timing-function: ease;
 }
 
-/* Exempt animated elements from color transitions to prevent interference */
 .animate-spin,
 .animate-pulse,
 .animate-bounce,
@@ -166,6 +138,9 @@ html[data-mode="saltwater"] body {
 
 body {
   background-color: var(--color-bg);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  color: var(--color-gray-900);
+  line-height: 1.6;
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }

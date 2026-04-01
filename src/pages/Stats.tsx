@@ -190,7 +190,7 @@ function ChartTooltip({ active, payload, label }: {
 }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-white border border-gray-100 rounded-xl px-3 py-2 shadow-md">
+    <div className="bg-white border border-gray-100 rounded-md px-3 py-2 shadow-md">
       <p className="text-xs font-semibold text-gray-800">{label}</p>
       <p className="text-xs text-teal-600 font-medium">{payload[0].value} catches</p>
     </div>
@@ -201,7 +201,7 @@ function ChartTooltip({ active, payload, label }: {
 
 function SummaryCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+    <div className="bg-white rounded-md border border-gray-100 p-4">
       <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">{label}</p>
       <p className="text-2xl font-bold text-gray-900 leading-tight truncate">{value}</p>
       {sub && <p className="text-xs text-gray-400 mt-0.5 truncate">{sub}</p>}
@@ -211,7 +211,7 @@ function SummaryCard({ label, value, sub }: { label: string; value: string; sub?
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+    <div className="bg-white rounded-md border border-gray-100 p-4">
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">{title}</p>
       {children}
     </div>
@@ -243,14 +243,14 @@ function StatsSkeleton() {
     <div className="animate-pulse space-y-4 px-4">
       <div className="grid grid-cols-2 gap-3">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4">
+          <div key={i} className="bg-white rounded-md border border-gray-100 p-4">
             <div className="h-3 bg-gray-100 rounded w-2/3 mb-2" />
             <div className="h-7 bg-gray-100 rounded w-1/2" />
           </div>
         ))}
       </div>
       {[...Array(3)].map((_, i) => (
-        <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4">
+        <div key={i} className="bg-white rounded-md border border-gray-100 p-4">
           <div className="h-3 bg-gray-100 rounded w-1/3 mb-4" />
           <div className="h-36 bg-gray-100 rounded" />
         </div>
@@ -272,10 +272,10 @@ const CONFIDENCE_CONFIG = {
 function InsightCard({ insight }: { insight: PatternInsight }) {
   const cfg = CONFIDENCE_CONFIG[insight.confidence] ?? CONFIDENCE_CONFIG.low
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+    <div className="bg-white rounded-md border border-gray-100 p-4">
       <div className="flex items-start gap-3">
         {/* Lightbulb icon */}
-        <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <div className="w-9 h-9 rounded-md bg-amber-50 flex items-center justify-center flex-shrink-0 mt-0.5">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-amber-500">
             <path d="M10 1a6 6 0 00-3.815 10.631C7.237 12.5 8 13.443 8 14.456v.644a.75.75 0 00.572.729 6.016 6.016 0 002.856 0A.75.75 0 0012 15.1v-.644c0-1.013.762-1.957 3.815-2.825A6 6 0 0010 1zM8.863 17.414a.75.75 0 00-.226 1.483 9.066 9.066 0 002.726 0 .75.75 0 00-.226-1.483 7.553 7.553 0 01-2.274 0z" />
           </svg>
@@ -350,7 +350,7 @@ function PatternAnalysis({ userId, totalTrips }: PatternAnalysisProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-md border border-gray-100 overflow-hidden">
       {/* Header */}
       <div className="px-4 pt-4 pb-3 border-b border-gray-50">
         <div className="flex items-center gap-2.5">
@@ -387,7 +387,7 @@ function PatternAnalysis({ userId, totalTrips }: PatternAnalysisProps) {
             </p>
             <button
               onClick={handleAnalyze}
-              className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-sm transition-colors"
+              className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-md transition-colors"
             >
               Analyze My Fishing
             </button>
@@ -405,12 +405,12 @@ function PatternAnalysis({ userId, totalTrips }: PatternAnalysisProps) {
         {/* Error */}
         {error && (
           <div className="pt-4">
-            <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-3">
+            <div className="bg-red-50 border border-red-100 rounded-md px-4 py-3 mb-3">
               <p className="text-sm text-red-700">{error}</p>
             </div>
             <button
               onClick={handleAnalyze}
-              className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-sm transition-colors"
+              className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-md transition-colors"
             >
               Try again
             </button>
@@ -499,7 +499,7 @@ export default function Stats() {
           </p>
           <Link
             to="/login"
-            className="text-sm font-semibold text-white bg-teal-600 px-6 py-3 rounded-xl shadow-sm"
+            className="text-sm font-semibold text-white bg-teal-600 px-6 py-3 rounded-md"
           >
             Sign in
           </Link>
@@ -527,7 +527,7 @@ export default function Stats() {
         <div className="px-4 mb-5">
           <h1 className="text-2xl font-bold text-gray-900">Stats</h1>
         </div>
-        <div className="mx-4 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+        <div className="mx-4 bg-red-50 border border-red-100 rounded-md px-4 py-3">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       </div>
@@ -554,7 +554,7 @@ export default function Stats() {
           </p>
           <Link
             to="/log/new"
-            className="text-sm font-semibold text-white bg-teal-600 px-6 py-3 rounded-xl shadow-sm"
+            className="text-sm font-semibold text-white bg-teal-600 px-6 py-3 rounded-md"
           >
             Log a trip
           </Link>
@@ -664,7 +664,7 @@ export default function Stats() {
         )}
 
         {/* ── Personal bests ──────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+        <div className="bg-white rounded-md border border-gray-100 p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Personal bests</p>
           <BestRow
             label="Heaviest fish"
