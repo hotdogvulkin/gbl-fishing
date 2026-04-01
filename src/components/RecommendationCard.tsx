@@ -66,6 +66,16 @@ export default function RecommendationCard({ recommendation, location }: Props) 
         </div>
       </div>
 
+      {/* Goal interpretation — freshwater only, when present */}
+      {!isSalt && !isSaltwaterRec(recommendation) && recommendation.goalInterpretation && (
+        <div className="px-4 py-2.5 border-b border-gray-50 flex items-start gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5 text-teal-500 flex-shrink-0 mt-px">
+            <path d="M8 1a5 5 0 00-3.162 8.872C5.49 10.43 6 11.17 6 12v.5a.5.5 0 00.5.5h3a.5.5 0 00.5-.5V12c0-.83.51-1.57 1.162-2.128A5 5 0 008 1zM6.5 14.5a.5.5 0 00.5.5h2a.5.5 0 000-1H7a.5.5 0 00-.5.5z" />
+          </svg>
+          <p className="text-xs text-gray-500 leading-relaxed">{recommendation.goalInterpretation}</p>
+        </div>
+      )}
+
       {/* Detail rows */}
       <div className="px-4">
         <DetailRow label="Target Fish" value={recommendation.targetFish} />

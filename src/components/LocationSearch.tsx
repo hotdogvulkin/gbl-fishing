@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type FormEvent, type KeyboardEvent } from 'react'
+import { useState, useEffect, useRef, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 import { useMode } from '../context/ModeContext'
 
 interface NominatimResult {
@@ -38,9 +38,10 @@ interface Props {
   onSearch: (location: string) => void
   loading: boolean
   onMapToggle?: () => void
+  targetContent?: ReactNode
 }
 
-export default function LocationSearch({ onSearch, loading, onMapToggle }: Props) {
+export default function LocationSearch({ onSearch, loading, onMapToggle, targetContent }: Props) {
   const { mode } = useMode()
   const [value, setValue] = useState('')
   const [suggestions, setSuggestions] = useState<NominatimResult[]>([])
@@ -138,6 +139,9 @@ export default function LocationSearch({ onSearch, loading, onMapToggle }: Props
             </button>
           )}
         </div>
+
+        {/* Optional targeting content between input and CTA */}
+        {targetContent}
 
         {/* CTA button */}
         <button

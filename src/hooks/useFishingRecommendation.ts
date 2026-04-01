@@ -27,12 +27,16 @@ export function useFishingRecommendation() {
   const [state, setState] = useState<RecommendationState>(INITIAL)
 
   // ── Freshwater text-search flow ──────────────────────────────────────────────
-  async function fetchRecommendation(location: string) {
+  async function fetchRecommendation(
+    location: string,
+    targetSpecies?: string,
+    goal?: string,
+  ) {
     if (!location.trim()) return
     setState({ ...INITIAL, loading: true })
     try {
       const weather = await fetchWeather(location)
-      const recommendation = await getRecommendation(location, weather)
+      const recommendation = await getRecommendation(location, weather, targetSpecies, goal)
       setState({ ...INITIAL, weather, recommendation, resultMode: 'freshwater', loading: false })
     } catch (err) {
       setState({ ...INITIAL, error: err instanceof Error ? err.message : 'Something went wrong' })
@@ -45,11 +49,12 @@ export function useFishingRecommendation() {
     lon: number,
     locationName: string,
     targetSpecies?: string,
+    goal?: string,
   ) {
     setState({ ...INITIAL, loading: true })
     try {
       const weather = await fetchWeatherByCoords(lat, lon)
-      const recommendation = await getRecommendation(locationName, weather, targetSpecies)
+      const recommendation = await getRecommendation(locationName, weather, targetSpecies, goal)
       setState({ ...INITIAL, weather, recommendation, resultMode: 'freshwater', loading: false })
     } catch (err) {
       setState({ ...INITIAL, error: err instanceof Error ? err.message : 'Something went wrong' })

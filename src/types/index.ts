@@ -41,6 +41,7 @@ export interface Recommendation {
   timingWindow: string
   reasoning: string
   rating: FishingRating
+  goalInterpretation?: string  // set when an angler goal or species was provided
 }
 
 // ── Saltwater-specific types ──────────────────────────────────────────────────

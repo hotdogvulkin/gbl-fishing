@@ -97,11 +97,26 @@ function ModeToggle() {
   )
 }
 
-// ── Saltwater target species ──────────────────────────────────────────────────
+// ── Species lists ─────────────────────────────────────────────────────────────
 
 const SALT_SPECIES = [
   'Any species', 'Mahi-Mahi', 'Wahoo', 'Kingfish',
   'Sailfish', 'Grouper', 'Snapper', 'Cobia', 'Amberjack',
+]
+
+const FRESH_SPECIES = [
+  'Any', 'Largemouth Bass', 'Bluegill', 'Black Crappie',
+  'Channel Catfish', 'Chain Pickerel', 'Florida Gar',
+  'Redear Sunfish', 'Warmouth', 'Bowfin',
+]
+
+type TargetMode = 'species' | 'goal'
+
+const GOAL_PLACEHOLDERS = [
+  'e.g. I want my kid to catch a lot of fish',
+  'e.g. looking for a trophy bass',
+  'e.g. want to catch dinner',
+  'e.g. easy fish for a beginner',
 ]
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -117,29 +132,47 @@ export default function Home() {
 
   const [submittedLocation, setSubmittedLocation] = useState('')
 
-  // Freshwater: collapsible map
+  // Freshwater: collapsible map + targeting
   const [mapOpen, setMapOpen] = useState(false)
+  const [targetMode, setTargetMode] = useState<TargetMode>('species')
+  const [freshSpecies, setFreshSpecies] = useState('Any')
+  const [goalText, setGoalText] = useState('')
 
   // Saltwater: pin dropped on the map
   const [saltPin, setSaltPin] = useState<{ lat: number; lon: number; name: string } | null>(null)
-  const [targetSpecies, setTargetSpecies] = useState('Any species')
+  const [saltSpecies, setSaltSpecies] = useState('Any species')
 
   useEffect(() => {
     reset()
     setSubmittedLocation('')
     setSaltPin(null)
     setMapOpen(false)
-    setTargetSpecies('Any species')
+    setFreshSpecies('Any')
+    setGoalText('')
+    setTargetMode('species')
+    setSaltSpecies('Any species')
   }, [mode]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function getFreshTargeting() {
+    if (targetMode === 'goal' && goalText.trim()) {
+      return { species: freshSpecies !== 'Any' ? freshSpecies : undefined, goal: goalText.trim() }
+    }
+    if (targetMode === 'species' && freshSpecies !== 'Any') {
+      return { species: freshSpecies, goal: undefined }
+    }
+    return { species: undefined, goal: undefined }
+  }
 
   function handleTextSearch(location: string) {
     setSubmittedLocation(location)
-    fetchRecommendation(location)
+    const { species, goal } = getFreshTargeting()
+    fetchRecommendation(location, species, goal)
   }
 
   function handleFreshwaterMapSelect(lat: number, lon: number, name: string) {
     setSubmittedLocation(name)
-    fetchRecommendationByCoords(lat, lon, name)
+    const { species, goal } = getFreshTargeting()
+    fetchRecommendationByCoords(lat, lon, name, species, goal)
   }
 
   function handleSaltwaterPinDrop(lat: number, lon: number, name: string) {
@@ -149,7 +182,7 @@ export default function Home() {
 
   function handleSaltwaterFetch() {
     if (!saltPin) return
-    fetchSaltwaterRecommendation(saltPin.lat, saltPin.lon, saltPin.name, targetSpecies)
+    fetchSaltwaterRecommendation(saltPin.lat, saltPin.lon, saltPin.name, saltSpecies)
   }
 
   return (
@@ -177,8 +210,8 @@ export default function Home() {
               Target species
             </label>
             <select
-              value={targetSpecies}
-              onChange={e => setTargetSpecies(e.target.value)}
+              value={saltSpecies}
+              onChange={e => setSaltSpecies(e.target.value)}
               className="w-full bg-white border border-gray-200 rounded-md px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent appearance-none"
             >
               {SALT_SPECIES.map(s => <option key={s}>{s}</option>)}
@@ -199,6 +232,56 @@ export default function Home() {
             onSearch={handleTextSearch}
             loading={loading}
             onMapToggle={() => setMapOpen(o => !o)}
+            targetContent={
+              <div className="space-y-2 pt-1">
+                <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-gray-400">
+                  What are you targeting?
+                </p>
+                {/* Toggle tabs */}
+                <div className="flex border border-gray-200 rounded-md overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setTargetMode('species')}
+                    className={`flex-1 py-2 text-xs font-medium transition-colors ${
+                      targetMode === 'species'
+                        ? 'bg-teal-600 text-white'
+                        : 'bg-white text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    Pick a species
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTargetMode('goal')}
+                    className={`flex-1 py-2 text-xs font-medium border-l border-gray-200 transition-colors ${
+                      targetMode === 'goal'
+                        ? 'bg-teal-600 text-white'
+                        : 'bg-white text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    Describe your goal
+                  </button>
+                </div>
+                {/* Input */}
+                {targetMode === 'species' ? (
+                  <select
+                    value={freshSpecies}
+                    onChange={e => setFreshSpecies(e.target.value)}
+                    className="w-full bg-white border border-gray-200 rounded-md px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent appearance-none"
+                  >
+                    {FRESH_SPECIES.map(s => <option key={s}>{s}</option>)}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={goalText}
+                    onChange={e => setGoalText(e.target.value)}
+                    placeholder={GOAL_PLACEHOLDERS[0]}
+                    className="w-full bg-white border border-gray-200 rounded-md px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent"
+                  />
+                )}
+              </div>
+            }
           />
 
           {mapOpen && (

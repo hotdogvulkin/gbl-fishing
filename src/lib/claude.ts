@@ -3,10 +3,11 @@ import type { WeatherConditions, Recommendation, SaltwaterRecommendation, Marine
 export async function getRecommendation(
   location: string,
   weather: WeatherConditions,
-  targetSpecies?: string
+  targetSpecies?: string,
+  goal?: string,
 ): Promise<Recommendation> {
 
-  const systemPrompt = `You are an expert fishing guide with deep knowledge of freshwater and saltwater fish behavior, seasonal patterns, weather effects, and fishing techniques.
+  const systemPrompt = `You are an expert freshwater fishing guide specializing in Florida lakes and rivers. You have deep knowledge of fish behavior relative to weather, moon phase, barometric pressure, and season.
 
 When given current conditions, return a fishing recommendation as ONLY a valid JSON object — no markdown, no explanation, no code fences. The JSON must match this exact shape:
 
@@ -16,14 +17,36 @@ When given current conditions, return a fishing recommendation as ONLY a valid J
   "bestKnot": "the knot name only — e.g. 'Palomar Knot' or 'Improved Clinch Knot'. No description, just the name.",
   "timingWindow": "best time window today, e.g. 'Dawn to 9am, then 5–7pm'",
   "reasoning": "2–3 sentences explaining why these conditions favor this approach",
-  "rating": "excellent" | "good" | "fair" | "slow"
+  "rating": "excellent" | "good" | "fair" | "slow",
+  "goalInterpretation": "one short sentence describing how you interpreted the angler's goal into a strategy — e.g. 'Targeting bluegill on small hooks for high catch counts — ideal for kids.' Leave as empty string if no goal was provided."
 }
 
 Rating guide:
 - excellent: multiple strong signals (stable or rising pressure, full/new moon, low wind, ideal temp)
 - good: mostly favorable with minor negatives
 - fair: mixed signals — fishable but not optimal
-- slow: poor conditions (rapid pressure drop, extreme wind, midday heat, etc.)`
+- slow: poor conditions (rapid pressure drop, extreme wind, midday heat, etc.)
+
+Goal interpretation guide (when an angler goal is provided):
+- "kid", "kids", "easy", "beginner", "a lot of fish", "many fish" → bluegill or crappie, small hook, worm or small jig, simple technique
+- "trophy", "big bass", "personal best", "lunker" → largemouth bass, big presentations, structure fishing, slower patience-based approach
+- "dinner", "eat", "keep" → prioritize panfish species (crappie, bluegill, catfish) that are legal to keep and good table fare
+- "bass fishing", "bass only" → largemouth bass, structure, appropriate lure per conditions
+- When goal is provided it takes full priority over any species selection`
+
+  // Build targeting block — goal takes priority over species selection
+  const targetingBlock = (() => {
+    if (goal?.trim()) {
+      const speciesHint = targetSpecies && targetSpecies !== 'Any'
+        ? ` (angler also selected ${targetSpecies} as a preference)`
+        : ''
+      return `\n- Angler's goal: "${goal.trim()}"${speciesHint} — interpret this goal into the best species and technique strategy`
+    }
+    if (targetSpecies && targetSpecies !== 'Any') {
+      return `\n- Target species: ${targetSpecies} — bias all recommendations toward this species given current conditions`
+    }
+    return ''
+  })()
 
   const userPrompt = `Location: ${location}
 Current conditions:
@@ -32,11 +55,7 @@ Current conditions:
 - Cloud cover: ${weather.cloudCoverPct}%
 - Barometric pressure: ${weather.pressureHpa} hPa
 - Sky: ${weather.description}
-- Moon: ${weather.moonPhase.name} (${Math.round(weather.moonPhase.illumination * 100)}% illuminated)${
-  targetSpecies && targetSpecies !== 'Any species'
-    ? `\n- Target species: ${targetSpecies}`
-    : ''
-}
+- Moon: ${weather.moonPhase.name} (${Math.round(weather.moonPhase.illumination * 100)}% illuminated)${targetingBlock}
 
 Respond with the JSON recommendation only.`
 
