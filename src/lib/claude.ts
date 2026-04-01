@@ -140,7 +140,7 @@ Rating guide:
 - fair: mixed signals — fishable but timing or conditions are marginal
 - slow: rough seas, extreme wind, dead tides, or off-temperature for target species`
 
-  const userPrompt = `Launch point: ${lat.toFixed(4)}°, ${lon.toFixed(4)}° (nearest reference: ${marine.nearestStation}, FL)
+  const userPrompt = `Launch point: ${locationName} (${lat.toFixed(4)}°, ${lon.toFixed(4)}°) — nearest tide station: ${marine.nearestStation}, FL
 Month / Season: ${month} (${season})
 Target species: ${targetSpecies && targetSpecies !== 'Any species' ? targetSpecies : 'any — recommend best option'}
 
