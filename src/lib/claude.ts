@@ -271,3 +271,74 @@ Use confidence "low" and empty species if the image is unclear, not a fish, or y
     return { species: '', confidence: 'low', description: 'Could not parse response.' }
   }
 }
+
+// ─── Pattern Analysis ─────────────────────────────────────────────────────────
+
+export interface PatternInsight {
+  title: string
+  insight: string
+  confidence: 'high' | 'medium' | 'low'
+  dataPoints: number
+}
+
+interface TripSummary {
+  date: string
+  lake: string
+  catches: Array<{
+    species: string
+    bait: string
+    weight?: string | null
+    length?: string | null
+    timeCaught?: string | null
+    notes?: string | null
+  }>
+  notes?: string | null
+}
+
+export async function analyzePatterns(trips: TripSummary[]): Promise<PatternInsight[]> {
+  // Format trip data compactly for the prompt
+  const tripLines = trips.map(t => {
+    const catchSummary = t.catches.map(c => {
+      const parts = [c.species, c.bait]
+      if (c.weight) parts.push(c.weight)
+      if (c.length) parts.push(c.length)
+      if (c.timeCaught) parts.push(`@${c.timeCaught}`)
+      return parts.join(', ')
+    }).join(' | ')
+    return `${t.date} — ${t.lake} — ${t.catches.length} catch${t.catches.length !== 1 ? 'es' : ''}: ${catchSummary || 'none'}`
+  }).join('\n')
+
+  const userPrompt = `Fishing log (${trips.length} trips, ${trips.reduce((n, t) => n + t.catches.length, 0)} total catches):
+
+${tripLines}
+
+Analyze this personal fishing history and return 3–5 insight cards as a JSON array. Each card must be a JSON object with:
+- "title": short title (4–7 words)
+- "insight": one specific, data-backed sentence. Include actual numbers, species names, bait names, and dates where relevant. Example style: "You catch largemouth bass 3× more often on overcast mornings — based on 12 trips."
+- "confidence": "high" (10+ supporting data points), "medium" (5–9), or "low" (2–4)
+- "dataPoints": integer count of trips or catches that support this insight
+
+Focus on: patterns between conditions and catches, most productive baits per species, time-of-day patterns, seasonal trends, and any other genuinely meaningful personal insight. Skip generic advice — only report what the data actually shows for THIS angler. If there is not enough variety in the data to identify a meaningful pattern, note that honestly.
+
+Respond with ONLY the JSON array — no markdown, no explanation.`
+
+  const res = await anthropicFetch({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 1024,
+    messages: [{ role: 'user', content: userPrompt }],
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error((err as { error?: { message?: string } }).error?.message ?? 'Pattern analysis failed')
+  }
+
+  const data = await res.json()
+  const text: string = data.content[0].text.trim()
+
+  try {
+    return JSON.parse(text) as PatternInsight[]
+  } catch {
+    throw new Error('Claude returned invalid JSON — try again')
+  }
+}

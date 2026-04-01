@@ -8,6 +8,8 @@ import {
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useMode } from '../context/ModeContext'
+import { analyzePatterns } from '../lib/claude'
+import type { PatternInsight } from '../lib/claude'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -16,12 +18,15 @@ interface RawCatch {
   bait: string
   weight: string | null
   length: string | null
+  time_caught: string | null
+  notes: string | null
 }
 
 interface RawTrip {
   id: string
   date: string
   lake: string
+  notes: string | null
   catches: RawCatch[]
 }
 
@@ -65,7 +70,6 @@ function trunc(s: string, max: number): string {
   return s.length > max ? s.slice(0, max - 1) + '…' : s
 }
 
-// Extract the leading number from a free-form string like "3.2 lbs" or "17 in"
 function parseNum(s: string | null | undefined): number {
   if (!s) return 0
   const m = s.match(/(\d+\.?\d*)/)
@@ -83,11 +87,9 @@ function computeStats(trips: RawTrip[]): ComputedStats {
     t.catches.map(c => ({ ...c, tripDate: t.date, tripLake: t.lake }))
   )
 
-  // ── Summary ──────────────────────────────────────────────────────────────
   const totalTrips = trips.length
   const totalCatches = catches.length
 
-  // ── Species frequency ────────────────────────────────────────────────────
   const speciesMap = new Map<string, number>()
   for (const c of catches) speciesMap.set(c.species, (speciesMap.get(c.species) ?? 0) + 1)
   const sortedSpecies = [...speciesMap.entries()].sort((a, b) => b[1] - a[1])
@@ -96,7 +98,6 @@ function computeStats(trips: RawTrip[]): ComputedStats {
     .slice(0, 8)
     .map(([s, n]) => ({ name: trunc(s, 12), catches: n }))
 
-  // ── Biggest catch ────────────────────────────────────────────────────────
   let heaviestCatch: CatchWithContext | null = null
   let heaviestVal = 0
   let longestCatch: CatchWithContext | null = null
@@ -113,7 +114,6 @@ function computeStats(trips: RawTrip[]): ComputedStats {
     ? { value: longestCatch.length!, species: longestCatch.species }
     : null
 
-  // ── Monthly trend — last 12 months ───────────────────────────────────────
   const now = new Date()
   const monthKeys: string[] = []
   for (let i = 11; i >= 0; i--) {
@@ -126,12 +126,10 @@ function computeStats(trips: RawTrip[]): ComputedStats {
     if (monthlyMap.has(key)) monthlyMap.set(key, monthlyMap.get(key)! + t.catches.length)
   }
   const monthlyChart = [...monthlyMap.entries()].map(([key, n]) => ({
-    // Use the 2nd to avoid any UTC/local boundary issues
     month: new Date(key + '-02').toLocaleDateString('en-US', { month: 'short' }),
     catches: n,
   }))
 
-  // ── Bait frequency ───────────────────────────────────────────────────────
   const baitMap = new Map<string, number>()
   for (const c of catches) baitMap.set(c.bait, (baitMap.get(c.bait) ?? 0) + 1)
   const baitChart = [...baitMap.entries()]
@@ -139,7 +137,6 @@ function computeStats(trips: RawTrip[]): ComputedStats {
     .slice(0, 8)
     .map(([b, n]) => ({ name: trunc(b, 16), catches: n }))
 
-  // ── Per-trip personal bests ──────────────────────────────────────────────
   let mostFishTrip: RawTrip | null = null
   let mostSpeciesTrip: RawTrip | null = null
   let mostSpeciesCount = 0
@@ -262,13 +259,197 @@ function StatsSkeleton() {
   )
 }
 
+// ─── Pattern Analysis section ─────────────────────────────────────────────────
+
+const MIN_TRIPS_FOR_PATTERNS = 5
+
+const CONFIDENCE_CONFIG = {
+  high:   { label: 'High confidence',   dot: 'bg-green-500',  text: 'text-green-700',  bg: 'bg-green-50' },
+  medium: { label: 'Medium confidence', dot: 'bg-yellow-400', text: 'text-yellow-700', bg: 'bg-yellow-50' },
+  low:    { label: 'Low confidence',    dot: 'bg-gray-400',   text: 'text-gray-600',   bg: 'bg-gray-50' },
+}
+
+function InsightCard({ insight }: { insight: PatternInsight }) {
+  const cfg = CONFIDENCE_CONFIG[insight.confidence] ?? CONFIDENCE_CONFIG.low
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+      <div className="flex items-start gap-3">
+        {/* Lightbulb icon */}
+        <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-amber-500">
+            <path d="M10 1a6 6 0 00-3.815 10.631C7.237 12.5 8 13.443 8 14.456v.644a.75.75 0 00.572.729 6.016 6.016 0 002.856 0A.75.75 0 0012 15.1v-.644c0-1.013.762-1.957 3.815-2.825A6 6 0 0010 1zM8.863 17.414a.75.75 0 00-.226 1.483 9.066 9.066 0 002.726 0 .75.75 0 00-.226-1.483 7.553 7.553 0 01-2.274 0z" />
+          </svg>
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-semibold text-gray-900 leading-snug mb-1">{insight.title}</h3>
+          <p className="text-sm text-gray-600 leading-relaxed">{insight.insight}</p>
+          <div className="flex items-center gap-3 mt-2.5">
+            <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full ${cfg.bg} ${cfg.text}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+              {cfg.label}
+            </span>
+            <span className="text-xs text-gray-400">{insight.dataPoints} data point{insight.dataPoints !== 1 ? 's' : ''}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface PatternAnalysisProps {
+  userId: string
+  totalTrips: number
+}
+
+function PatternAnalysis({ userId, totalTrips }: PatternAnalysisProps) {
+  const [patterns, setPatterns] = useState<PatternInsight[] | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const tripsNeeded = MIN_TRIPS_FOR_PATTERNS - totalTrips
+
+  async function handleAnalyze() {
+    setLoading(true)
+    setError(null)
+
+    // Fetch full trip + catch detail for pattern analysis
+    const { data, error: dbError } = await supabase
+      .from('trips')
+      .select('id, date, lake, notes, catches(species, bait, weight, length, time_caught, notes)')
+      .eq('user_id', userId)
+      .order('date', { ascending: true })
+
+    if (dbError) {
+      setError('Failed to load trip data — ' + dbError.message)
+      setLoading(false)
+      return
+    }
+
+    try {
+      const trips = (data ?? []) as RawTrip[]
+      const result = await analyzePatterns(
+        trips.map(t => ({
+          date: t.date,
+          lake: t.lake,
+          notes: t.notes,
+          catches: t.catches.map(c => ({
+            species: c.species,
+            bait: c.bait,
+            weight: c.weight,
+            length: c.length,
+            timeCaught: c.time_caught,
+            notes: c.notes,
+          })),
+        }))
+      )
+      setPatterns(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Pattern analysis failed')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-4 pt-4 pb-3 border-b border-gray-50">
+        <div className="flex items-center gap-2.5">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-teal-600 flex-shrink-0">
+            <path d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192zM6.949 5.684a1 1 0 00-1.898 0l-.683 2.051a1 1 0 01-.633.633l-2.051.683a1 1 0 000 1.898l2.051.684a1 1 0 01.633.632l.683 2.051a1 1 0 001.898 0l.683-2.051a1 1 0 01.633-.633l2.051-.683a1 1 0 000-1.897l-2.051-.683a1 1 0 01-.633-.633L6.95 5.684zM13.949 13.684a1 1 0 00-1.898 0l-.184.551a1 1 0 01-.632.633l-.551.183a1 1 0 000 1.898l.551.183a1 1 0 01.633.633l.183.551a1 1 0 001.898 0l.184-.551a1 1 0 01.632-.633l.551-.183a1 1 0 000-1.898l-.551-.184a1 1 0 01-.633-.632l-.183-.551z" />
+          </svg>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Your Patterns</p>
+        </div>
+      </div>
+
+      <div className="px-4 pb-4">
+        {/* Not enough trips yet */}
+        {totalTrips < MIN_TRIPS_FOR_PATTERNS && (
+          <div className="pt-4 flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-6 h-6 text-gray-400">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <p className="text-sm font-semibold text-gray-900 mb-1">
+              {tripsNeeded} more trip{tripsNeeded !== 1 ? 's' : ''} to unlock
+            </p>
+            <p className="text-xs text-gray-400 max-w-[240px] leading-relaxed">
+              Log {tripsNeeded} more trip{tripsNeeded !== 1 ? 's' : ''} and we'll use AI to find meaningful patterns in your personal fishing history.
+            </p>
+          </div>
+        )}
+
+        {/* Ready — not yet analyzed */}
+        {totalTrips >= MIN_TRIPS_FOR_PATTERNS && !patterns && !loading && !error && (
+          <div className="pt-4">
+            <p className="text-sm text-gray-500 leading-relaxed mb-4">
+              You've logged <span className="font-semibold text-gray-800">{totalTrips} trips</span> — enough data to identify patterns in your fishing. Claude will analyze what conditions, baits, and times of day produce your best results.
+            </p>
+            <button
+              onClick={handleAnalyze}
+              className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-sm transition-colors"
+            >
+              Analyze My Fishing
+            </button>
+          </div>
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <div className="pt-4 flex flex-col items-center text-center gap-3">
+            <div className="w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-gray-500">Analyzing your fishing history…</p>
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div className="pt-4">
+            <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+            <button
+              onClick={handleAnalyze}
+              className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-sm transition-colors"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {/* Results */}
+        {patterns && patterns.length > 0 && (
+          <div className="pt-4 space-y-3">
+            {patterns.map((p, i) => (
+              <InsightCard key={i} insight={p} />
+            ))}
+            <button
+              onClick={() => { setPatterns(null); setError(null) }}
+              className="w-full py-2.5 text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors"
+            >
+              Re-analyze
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Stats() {
   const { user, loading: authLoading } = useAuth()
+  const { mode } = useMode()
   const [stats, setStats] = useState<ComputedStats | null>(null)
   const [dataLoading, setDataLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const isSaltwater = mode === 'saltwater'
+  const chartAccent = isSaltwater ? '#0ea5e9' : '#0d9488'
+  const gridColor   = isSaltwater ? '#1e3a5f' : '#f1f5f9'
+  const cursorFill  = isSaltwater ? '#132a44' : '#f8fafc'
+  const tickStyle   = { fontSize: 11, fill: isSaltwater ? '#7aa0c4' : '#94a3b8' }
 
   useEffect(() => {
     if (!user) return
@@ -279,7 +460,7 @@ export default function Stats() {
 
     supabase
       .from('trips')
-      .select('id, date, lake, catches(species, bait, weight, length)')
+      .select('id, date, lake, notes, catches(species, bait, weight, length, time_caught, notes)')
       .eq('user_id', user.id)
       .order('date', { ascending: true })
       .then(({ data, error: dbError }) => {
@@ -383,13 +564,6 @@ export default function Stats() {
   }
 
   // ── Stats display ─────────────────────────────────────────────────────────
-  const { mode } = useMode()
-  const isSaltwater = mode === 'saltwater'
-  const chartAccent = isSaltwater ? '#0ea5e9' : '#0d9488'
-  const gridColor   = isSaltwater ? '#1e3a5f' : '#f1f5f9'
-  const cursorFill  = isSaltwater ? '#132a44' : '#f8fafc'
-  const tickStyle   = { fontSize: 11, fill: isSaltwater ? '#7aa0c4' : '#94a3b8' }
-
   return (
     <div className="pt-6 pb-4">
       <div className="px-4 mb-5">
@@ -417,7 +591,6 @@ export default function Stats() {
         {/* ── Catches by species ──────────────────────────────────────────── */}
         {stats.speciesChart.length > 0 && (
           <ChartCard title="Catches by species">
-            {/* Horizontal bars — better for named categories on mobile */}
             <ResponsiveContainer width="100%" height={Math.max(160, stats.speciesChart.length * 34)}>
               <BarChart
                 data={stats.speciesChart}
@@ -522,6 +695,9 @@ export default function Stats() {
               : undefined}
           />
         </div>
+
+        {/* ── Your Patterns ───────────────────────────────────────────────── */}
+        <PatternAnalysis userId={user.id} totalTrips={stats.totalTrips} />
 
       </div>
     </div>

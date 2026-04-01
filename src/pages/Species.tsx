@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
-import { SPECIES, searchSpecies, type Species } from '../lib/species'
+import { SPECIES, searchSpecies, SALTWATER_SPECIES, searchSaltwaterSpecies } from '../lib/species'
+import type { Species, SaltwaterSpecies } from '../lib/species'
+import { useMode } from '../context/ModeContext'
 
 // Fetches the first matching species photo from iNaturalist (no API key required)
 async function fetchPhoto(query: string): Promise<string | null> {
@@ -54,12 +56,13 @@ function PhotoThumbnail({ query }: { query: string }) {
   )
 }
 
+// ── Freshwater species card ───────────────────────────────────────────────────
+
 function SpeciesCard({ species }: { species: Species }) {
   const [expanded, setExpanded] = useState(false)
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* Collapsed row */}
       <button
         type="button"
         onClick={() => setExpanded(e => !e)}
@@ -88,15 +91,11 @@ function SpeciesCard({ species }: { species: Species }) {
         </div>
       </button>
 
-      {/* Expanded detail */}
       {expanded && (
         <div className="border-t border-gray-50 px-4 pb-5 space-y-4">
-          {/* Full description */}
           <div className="pt-4">
             <p className="text-sm text-gray-600 leading-relaxed">{species.description}</p>
           </div>
-
-          {/* Stats grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-gray-50 rounded-xl p-3">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Average Size</p>
@@ -107,14 +106,10 @@ function SpeciesCard({ species }: { species: Species }) {
               <p className="text-sm text-gray-700 leading-snug">{species.floridaRecord}</p>
             </div>
           </div>
-
-          {/* Habitat */}
           <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Habitat</p>
             <p className="text-sm text-gray-600 leading-relaxed">{species.habitat}</p>
           </div>
-
-          {/* Catching tips */}
           <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2.5">Catching Tips</p>
             <ul className="space-y-2.5">
@@ -128,8 +123,6 @@ function SpeciesCard({ species }: { species: Species }) {
               ))}
             </ul>
           </div>
-
-          {/* Photo credit */}
           <p className="text-[10px] text-gray-300">Photos via iNaturalist · CC-BY-NC</p>
         </div>
       )}
@@ -137,15 +130,146 @@ function SpeciesCard({ species }: { species: Species }) {
   )
 }
 
+// ── Saltwater species card ────────────────────────────────────────────────────
+
+function StatBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-gray-50 rounded-xl p-3">
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">{label}</p>
+      <p className="text-sm text-gray-700 leading-snug">{value}</p>
+    </div>
+  )
+}
+
+function SaltwaterSpeciesCard({ species }: { species: SaltwaterSpecies }) {
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setExpanded(e => !e)}
+        className="w-full text-left p-4"
+        aria-expanded={expanded}
+      >
+        <div className="flex gap-3 items-start">
+          <PhotoThumbnail query={species.iNaturalistQuery} />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <h2 className="text-base font-semibold text-gray-900 leading-snug">{species.commonName}</h2>
+                <p className="text-xs italic text-gray-400 mt-0.5">{species.scientificName}</p>
+              </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className={`w-4 h-4 text-gray-400 flex-shrink-0 mt-1 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+              >
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <p className="text-sm text-gray-500 mt-1.5 leading-relaxed line-clamp-2">{species.description}</p>
+          </div>
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="border-t border-gray-50 px-4 pb-5 space-y-4">
+          {/* Full description */}
+          <div className="pt-4">
+            <p className="text-sm text-gray-600 leading-relaxed">{species.description}</p>
+          </div>
+
+          {/* Stats grid — 2 col */}
+          <div className="grid grid-cols-2 gap-3">
+            <StatBlock label="Average Size"   value={species.averageSize} />
+            <StatBlock label="FL Record"      value={species.floridaRecord} />
+            <StatBlock label="World Record"   value={species.worldRecord} />
+            <StatBlock label="Depth Range"    value={species.depthRange} />
+            <StatBlock label="Best Season FL" value={species.bestSeasonFL} />
+            <StatBlock label="Preferred Temp" value={species.preferredTempF} />
+          </div>
+
+          {/* Habitat */}
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Habitat &amp; Range</p>
+            <p className="text-sm text-gray-600 leading-relaxed">{species.habitat}</p>
+          </div>
+
+          {/* Technical — feeding time + trolling speed */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-blue-50 rounded-xl p-3">
+              <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1">Peak Feeding</p>
+              <p className="text-sm text-blue-800 leading-snug">{species.feedingTime}</p>
+            </div>
+            {species.trollingSpeedKts ? (
+              <div className="bg-blue-50 rounded-xl p-3">
+                <p className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1">Trolling Speed</p>
+                <p className="text-sm text-blue-800 leading-snug">{species.trollingSpeedKts}</p>
+              </div>
+            ) : (
+              <div className="bg-gray-50 rounded-xl p-3">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Technique</p>
+                <p className="text-sm text-gray-600 leading-snug">Bottom / structure fishing</p>
+              </div>
+            )}
+          </div>
+
+          {/* Rigging methods */}
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2.5">Rigging Methods</p>
+            <ul className="space-y-2.5">
+              {species.riggingMethods.map((method, i) => (
+                <li key={i} className="flex gap-2.5 text-sm text-gray-600 leading-relaxed">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold flex items-center justify-center mt-0.5">
+                    {i + 1}
+                  </span>
+                  <span>{method}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Pro tips */}
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2.5">Pro Tips</p>
+            <ul className="space-y-2.5">
+              {species.tips.map((tip, i) => (
+                <li key={i} className="flex gap-2.5 text-sm text-gray-600 leading-relaxed">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-teal-50 text-teal-600 text-xs font-bold flex items-center justify-center mt-0.5">
+                    ★
+                  </span>
+                  <span>{tip}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <p className="text-[10px] text-gray-300">Photos via iNaturalist · CC-BY-NC</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function SpeciesPage() {
+  const { mode } = useMode()
+  const isSaltwater = mode === 'saltwater'
   const [query, setQuery] = useState('')
-  const results = searchSpecies(query)
+
+  const freshResults = searchSpecies(query)
+  const saltResults  = searchSaltwaterSpecies(query)
 
   return (
     <div className="pt-6 pb-4">
       <div className="px-4 mb-5">
         <h1 className="text-2xl font-bold text-gray-900">Species</h1>
-        <p className="text-sm text-gray-500 mt-1">Florida freshwater fish guide</p>
+        <p className="text-sm text-gray-500 mt-1">
+          {isSaltwater ? 'Florida offshore fish guide' : 'Florida freshwater fish guide'}
+        </p>
       </div>
 
       {/* Search */}
@@ -176,25 +300,45 @@ export default function SpeciesPage() {
       </div>
 
       {/* List */}
-      {results.length > 0 ? (
-        <div className="px-4 space-y-3">
-          {results.map(s => (
-            <SpeciesCard key={s.id} species={s} />
-          ))}
-        </div>
+      {isSaltwater ? (
+        saltResults.length > 0 ? (
+          <div className="px-4 space-y-3">
+            {saltResults.map(s => (
+              <SaltwaterSpeciesCard key={s.id} species={s} />
+            ))}
+          </div>
+        ) : (
+          <div className="px-4 mt-12 flex flex-col items-center text-center">
+            <span className="text-4xl mb-3">🔍</span>
+            <p className="text-sm text-gray-500">No species matching "{query}"</p>
+            <button onClick={() => setQuery('')} className="mt-3 text-sm font-medium text-teal-600">
+              Clear search
+            </button>
+          </div>
+        )
       ) : (
-        <div className="px-4 mt-12 flex flex-col items-center text-center">
-          <span className="text-4xl mb-3">🔍</span>
-          <p className="text-sm text-gray-500">No species matching "{query}"</p>
-          <button onClick={() => setQuery('')} className="mt-3 text-sm font-medium text-teal-600">
-            Clear search
-          </button>
-        </div>
+        freshResults.length > 0 ? (
+          <div className="px-4 space-y-3">
+            {freshResults.map(s => (
+              <SpeciesCard key={s.id} species={s} />
+            ))}
+          </div>
+        ) : (
+          <div className="px-4 mt-12 flex flex-col items-center text-center">
+            <span className="text-4xl mb-3">🔍</span>
+            <p className="text-sm text-gray-500">No species matching "{query}"</p>
+            <button onClick={() => setQuery('')} className="mt-3 text-sm font-medium text-teal-600">
+              Clear search
+            </button>
+          </div>
+        )
       )}
 
       {!query && (
         <p className="mt-4 px-4 text-xs text-gray-400 text-center">
-          {SPECIES.length} species · tap any card for full details
+          {isSaltwater
+            ? `${SALTWATER_SPECIES.length} offshore species · tap any card for full details`
+            : `${SPECIES.length} species · tap any card for full details`}
         </p>
       )}
     </div>

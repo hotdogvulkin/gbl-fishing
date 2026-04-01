@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { REGULATIONS, searchRegulations, type Regulation } from '../lib/regulations'
+import { REGULATIONS, searchRegulations, SALTWATER_REGULATIONS, searchSaltwaterRegulations } from '../lib/regulations'
+import type { Regulation, SaltwaterRegulation } from '../lib/regulations'
+import { useMode } from '../context/ModeContext'
 
 function SizeIcon() {
   return (
@@ -25,6 +27,8 @@ function InfoIcon() {
   )
 }
 
+// ── Freshwater card ───────────────────────────────────────────────────────────
+
 function RegCard({ reg }: { reg: Regulation }) {
   const [expanded, setExpanded] = useState(false)
 
@@ -47,8 +51,6 @@ function RegCard({ reg }: { reg: Regulation }) {
               <span className="text-xl">{reg.emoji}</span>
               <h2 className="text-base font-semibold text-gray-900">{reg.species}</h2>
             </div>
-
-            {/* Stat chips */}
             <div className="flex flex-wrap gap-2">
               <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-teal-50 text-teal-700 px-2.5 py-1 rounded-full">
                 <SizeIcon />
@@ -63,8 +65,6 @@ function RegCard({ reg }: { reg: Regulation }) {
               </span>
             </div>
           </div>
-
-          {/* Chevron */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
@@ -76,7 +76,6 @@ function RegCard({ reg }: { reg: Regulation }) {
         </div>
       </button>
 
-      {/* Expanded notes */}
       {expanded && (
         <div className="px-4 pb-4 border-t border-gray-50">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mt-3 mb-2.5">Special Rules &amp; Notes</p>
@@ -95,15 +94,114 @@ function RegCard({ reg }: { reg: Regulation }) {
   )
 }
 
+// ── Saltwater card ────────────────────────────────────────────────────────────
+
+const JURISDICTION_STYLES: Record<SaltwaterRegulation['jurisdiction'], { bg: string; text: string }> = {
+  'Federal':          { bg: 'bg-indigo-50', text: 'text-indigo-700' },
+  'State (FWC)':      { bg: 'bg-emerald-50', text: 'text-emerald-700' },
+  'Federal / State':  { bg: 'bg-purple-50', text: 'text-purple-700' },
+}
+
+function SaltwaterRegCard({ reg }: { reg: SaltwaterRegulation }) {
+  const [expanded, setExpanded] = useState(false)
+
+  const sizeLabel = reg.minSizeIn != null ? `${reg.minSizeIn}" min` : 'No min size'
+  const bagLabel = typeof reg.dailyBag === 'number'
+    ? `${reg.dailyBag} per day`
+    : reg.dailyBag
+  const jStyle = JURISDICTION_STYLES[reg.jurisdiction]
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setExpanded(e => !e)}
+        className="w-full text-left px-4 py-4"
+        aria-expanded={expanded}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 mb-2.5">
+              <span className="text-xl">{reg.emoji}</span>
+              <h2 className="text-base font-semibold text-gray-900">{reg.species}</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-teal-50 text-teal-700 px-2.5 py-1 rounded-full">
+                <SizeIcon />
+                {sizeLabel}
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">
+                <BagIcon />
+                {bagLabel}
+              </span>
+              <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${jStyle.bg} ${jStyle.text}`}>
+                {reg.jurisdiction}
+              </span>
+            </div>
+            <p className="text-xs text-gray-400 mt-2">{reg.season}</p>
+          </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className={`w-4 h-4 text-gray-400 flex-shrink-0 mt-1 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+          >
+            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+          </svg>
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4 border-t border-gray-50">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mt-3 mb-2.5">Rules &amp; Notes</p>
+          <ul className="space-y-2.5">
+            {reg.notes.map((note, i) => (
+              <li key={i} className="flex gap-2 text-sm text-gray-600 leading-relaxed">
+                <InfoIcon />
+                <span>{note}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs text-gray-400">{reg.source}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function Regulations() {
+  const { mode } = useMode()
+  const isSaltwater = mode === 'saltwater'
   const [query, setQuery] = useState('')
-  const results = searchRegulations(query)
+
+  const freshResults = searchRegulations(query)
+  const saltResults  = searchSaltwaterRegulations(query)
 
   return (
     <div className="pt-6 pb-4">
-      <div className="px-4 mb-5">
+      <div className="px-4 mb-4">
         <h1 className="text-2xl font-bold text-gray-900">Regulations</h1>
-        <p className="text-sm text-gray-500 mt-1">Florida freshwater — statewide rules</p>
+      </div>
+
+      {/* Ruleset indicator */}
+      <div className={`mx-4 mb-4 rounded-xl px-4 py-3 flex items-center gap-3 ${
+        isSaltwater
+          ? 'bg-indigo-50 border border-indigo-100'
+          : 'bg-teal-50 border border-teal-100'
+      }`}>
+        <span className="text-xl flex-shrink-0">{isSaltwater ? '🌊' : '🏞️'}</span>
+        <div className="min-w-0">
+          <p className={`text-sm font-semibold ${isSaltwater ? 'text-indigo-800' : 'text-teal-800'}`}>
+            {isSaltwater ? 'Florida Offshore — NOAA Federal Rules' : 'Florida Freshwater — FWC Rules'}
+          </p>
+          <p className={`text-xs mt-0.5 ${isSaltwater ? 'text-indigo-600' : 'text-teal-600'}`}>
+            {isSaltwater
+              ? `${SALTWATER_REGULATIONS.length} species covered · Federal & State jurisdictions`
+              : `${REGULATIONS.length} species covered · Statewide rules`}
+          </p>
+        </div>
       </div>
 
       {/* Search */}
@@ -139,31 +237,54 @@ export default function Regulations() {
           <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
         </svg>
         <p className="text-xs text-amber-700 leading-relaxed">
-          Regulations change. Always verify with <span className="font-semibold">myfwc.com</span> before fishing — some water bodies have special rules not shown here.
+          {isSaltwater
+            ? <>Regulations change. Verify at <span className="font-semibold">fisheries.noaa.gov/southeast</span> and <span className="font-semibold">myfwc.com</span> before fishing. Seasons and bag limits are adjusted annually.</>
+            : <>Regulations change. Always verify with <span className="font-semibold">myfwc.com</span> before fishing — some water bodies have special rules not shown here.</>
+          }
         </p>
       </div>
 
       {/* Results */}
-      {results.length > 0 ? (
-        <div className="px-4 space-y-3">
-          {results.map(reg => (
-            <RegCard key={reg.species} reg={reg} />
-          ))}
-        </div>
+      {isSaltwater ? (
+        saltResults.length > 0 ? (
+          <div className="px-4 space-y-3">
+            {saltResults.map(reg => (
+              <SaltwaterRegCard key={reg.species} reg={reg} />
+            ))}
+          </div>
+        ) : (
+          <div className="px-4 mt-12 flex flex-col items-center text-center">
+            <span className="text-4xl mb-3">🔍</span>
+            <p className="text-sm text-gray-500">No results for "{query}"</p>
+            <button onClick={() => setQuery('')} className="mt-3 text-sm font-medium text-teal-600">
+              Clear search
+            </button>
+          </div>
+        )
       ) : (
-        <div className="px-4 mt-12 flex flex-col items-center text-center">
-          <span className="text-4xl mb-3">🔍</span>
-          <p className="text-sm text-gray-500">No results for "{query}"</p>
-          <button onClick={() => setQuery('')} className="mt-3 text-sm font-medium text-teal-600">
-            Clear search
-          </button>
-        </div>
+        freshResults.length > 0 ? (
+          <div className="px-4 space-y-3">
+            {freshResults.map(reg => (
+              <RegCard key={reg.species} reg={reg} />
+            ))}
+          </div>
+        ) : (
+          <div className="px-4 mt-12 flex flex-col items-center text-center">
+            <span className="text-4xl mb-3">🔍</span>
+            <p className="text-sm text-gray-500">No results for "{query}"</p>
+            <button onClick={() => setQuery('')} className="mt-3 text-sm font-medium text-teal-600">
+              Clear search
+            </button>
+          </div>
+        )
       )}
 
       {/* Total count */}
       {!query && (
         <p className="mt-4 px-4 text-xs text-gray-400 text-center">
-          {REGULATIONS.length} species covered · Florida FWC statewide rules
+          {isSaltwater
+            ? `${SALTWATER_REGULATIONS.length} species covered · NOAA federal rules`
+            : `${REGULATIONS.length} species covered · Florida FWC statewide rules`}
         </p>
       )}
     </div>
