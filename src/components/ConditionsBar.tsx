@@ -1,3 +1,4 @@
+import React from 'react'
 import type { WeatherConditions, MarineConditions } from '../types'
 
 // ── SVG icons ─────────────────────────────────────────────────────────────────
@@ -70,7 +71,7 @@ interface Props {
 }
 
 interface Item {
-  Icon: () => JSX.Element
+  Icon: () => React.ReactElement
   label: string
   value: string
 }

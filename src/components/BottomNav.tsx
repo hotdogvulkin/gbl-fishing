@@ -86,12 +86,10 @@ export default function BottomNav() {
             }`
           }
         >
-          {({ isActive }) => (
-            <>
-              <Icon />
-              <span>{label}</span>
-            </>
-          )}
+          <>
+            <Icon />
+            <span>{label}</span>
+          </>
         </NavLink>
       ))}
     </nav>
