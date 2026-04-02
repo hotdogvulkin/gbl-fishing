@@ -13,7 +13,9 @@ export default function Layout() {
           Only one is visible at a time — they fade in/out on mode switch. */}
       <BioluminescenceCanvas visible={mode === 'saltwater'} />
       <MorningMistCanvas     visible={mode === 'freshwater'} />
-      <div className="min-h-screen pb-16">
+      {/* relative z-[1] creates a stacking context above the MorningMistCanvas
+          (z-index: 0), so all page content renders on top of the mist layer. */}
+      <div className="min-h-screen pb-16 relative z-[1]">
         <div key={location.pathname} className="page-enter">
           <Outlet />
         </div>

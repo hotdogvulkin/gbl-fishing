@@ -250,7 +250,11 @@ export default function MorningMistCanvas({ visible }: Props) {
         inset: 0,
         width: '100%',
         height: '100%',
-        zIndex: -1,
+        // z-index: 0 places the canvas above body's painted background
+        // (category 6 in CSS stacking order) so the blobs are actually visible.
+        // The Layout content wrapper sits at z-index: 1, keeping all page
+        // content above the canvas.
+        zIndex: 0,
         pointerEvents: 'none',
         opacity: cssOpacity,
         transition: `opacity ${FADE_DURATION_MS}ms ease`,
