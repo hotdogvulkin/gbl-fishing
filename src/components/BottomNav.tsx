@@ -64,7 +64,7 @@ function BarChartIcon() {
 // ─── Tab config ───────────────────────────────────────────────────────────────
 
 const tabs = [
-  { to: '/',            label: 'Home',     Icon: HomeIcon,      end: true  },
+  { to: '/home',         label: 'Home',     Icon: HomeIcon,      end: true  },
   { to: '/species',     label: 'Species',  Icon: FishIcon,      end: false },
   { to: '/regulations', label: 'Regs',     Icon: BookIcon,      end: false },
   { to: '/log',         label: 'Log',      Icon: LogIcon,       end: false },
