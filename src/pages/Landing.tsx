@@ -154,9 +154,18 @@ const FEATURE_LIST = [
 
 export default function Landing() {
   useEffect(() => {
-    const prev = document.documentElement.style.background
+    // body has `background-color: var(--color-bg)` from index.css which in
+    // freshwater mode resolves to #FAFAFA and paints over the canvas.
+    // We null it out so the html background shows through, making the
+    // BioluminescenceCanvas (z-index: -1) visible through the transparent hero.
+    const prevHtmlBg = document.documentElement.style.background
+    const prevBodyBg = document.body.style.backgroundColor
     document.documentElement.style.background = '#080F1A'
-    return () => { document.documentElement.style.background = prev }
+    document.body.style.backgroundColor = 'transparent'
+    return () => {
+      document.documentElement.style.background = prevHtmlBg
+      document.body.style.backgroundColor = prevBodyBg
+    }
   }, [])
 
   return (
@@ -164,37 +173,42 @@ export default function Landing() {
       <BioluminescenceCanvas visible />
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      {/* All colors are hardcoded — no Tailwind CSS-variable classes — so
+          this section is immune to freshwater/saltwater mode switching.     */}
       <section className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-teal-400 mb-6">
+        <p className="text-[11px] font-medium uppercase tracking-[0.14em] mb-6 text-[#2DD4BF]">
           GBL Fishing
         </p>
         <h1
-          className="font-bold text-white leading-none tracking-tight mb-6"
+          className="font-bold leading-none tracking-tight mb-6 text-white"
           style={{ fontSize: 'clamp(3rem, 8vw, 5rem)' }}
         >
           Know Before You Go.
         </h1>
-        <p className="text-gray-400 text-base md:text-lg leading-relaxed mb-10" style={{ maxWidth: '500px' }}>
+        <p
+          className="text-base md:text-lg leading-relaxed mb-10 text-[#9CA3AF]"
+          style={{ maxWidth: '500px' }}
+        >
           Real-time weather, tides, moon phase, and AI-powered recommendations — freshwater and offshore.
         </p>
         <div className="flex items-center gap-3 flex-wrap justify-center">
           <Link
             to="/signup"
-            className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-7 py-3 rounded-md transition-colors"
+            className="bg-[#0D9488] hover:bg-[#0f766e] text-white text-sm font-medium px-7 py-3 rounded-md transition-colors"
           >
             Get Started
           </Link>
           <a
             href="#features"
             onClick={e => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }) }}
-            className="border border-gray-600 hover:border-gray-400 text-gray-300 hover:text-white text-sm font-medium px-7 py-3 rounded-md transition-colors"
+            className="border border-[#4B5563] hover:border-[#9CA3AF] text-[#D1D5DB] hover:text-white text-sm font-medium px-7 py-3 rounded-md transition-colors"
           >
             See How It Works
           </a>
         </div>
         <Link
           to="/home"
-          className="mt-5 text-sm text-gray-500 hover:text-gray-300 transition-colors"
+          className="mt-5 text-sm text-[#6B7280] hover:text-[#D1D5DB] transition-colors"
         >
           Continue without an account →
         </Link>
@@ -338,10 +352,10 @@ export default function Landing() {
         >
           Ready to fish smarter?
         </h2>
-        <p className="text-gray-400 text-sm mb-8">Free to use. No credit card required.</p>
+        <p className="text-sm mb-8 text-[#9CA3AF]">Free to use. No credit card required.</p>
         <Link
           to="/signup"
-          className="inline-block bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-8 py-3 rounded-md transition-colors"
+          className="inline-block bg-[#0D9488] hover:bg-[#0f766e] text-white text-sm font-medium px-8 py-3 rounded-md transition-colors"
         >
           Get Started
         </Link>
