@@ -192,6 +192,12 @@ export default function Landing() {
             See How It Works
           </a>
         </div>
+        <Link
+          to="/home"
+          className="mt-5 text-sm text-gray-500 hover:text-gray-300 transition-colors"
+        >
+          Continue without an account →
+        </Link>
       </section>
 
       {/* ── Features ──────────────────────────────────────────────────────── */}
@@ -342,9 +348,8 @@ export default function Landing() {
       </section>
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
-      <footer className="bg-white border-t border-gray-200 px-6 py-5 flex items-center justify-between">
+      <footer className="bg-white border-t border-gray-200 px-6 py-5">
         <span className="text-sm font-bold tracking-tight text-gray-900">GBL Fishing</span>
-        <span className="text-sm text-gray-400">Built by Grant Garcia</span>
       </footer>
     </div>
   )

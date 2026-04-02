@@ -25,17 +25,43 @@ function AccountMenu() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [open])
 
+  // ── Guest state — person icon with sign-in/sign-up dropdown ──────────────
   if (!user) {
     return (
-      <button
-        onClick={() => navigate('/login')}
-        className="text-sm font-semibold text-teal-600 px-3 py-1.5 rounded-md hover:bg-teal-50 transition-colors"
-      >
-        Sign in
-      </button>
+      <div ref={containerRef} className="relative">
+        <button
+          onClick={() => setOpen(o => !o)}
+          className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
+          aria-label="Account menu"
+          aria-expanded={open}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8" />
+          </svg>
+        </button>
+
+        {open && (
+          <div className="absolute right-0 top-11 w-48 bg-white rounded-md shadow-lg border border-gray-100 py-1 z-50">
+            <button
+              onClick={() => { setOpen(false); navigate('/login') }}
+              className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Sign in
+            </button>
+            <button
+              onClick={() => { setOpen(false); navigate('/signup') }}
+              className="w-full text-left px-4 py-3 text-sm font-medium text-teal-600 hover:bg-teal-50 transition-colors"
+            >
+              Create account
+            </button>
+          </div>
+        )}
+      </div>
     )
   }
 
+  // ── Authenticated state ────────────────────────────────────────────────────
   return (
     <div ref={containerRef} className="relative">
       <button
