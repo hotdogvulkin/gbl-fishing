@@ -1,7 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom'
 import BottomNav from './BottomNav'
 import BioluminescenceCanvas from './BioluminescenceCanvas'
-import MorningMistCanvas from './MorningMistCanvas'
+import WaterCausticsCanvas from './WaterCausticsCanvas'
 import { useMode } from '../context/ModeContext'
 
 export default function Layout() {
@@ -12,7 +12,7 @@ export default function Layout() {
       {/* Both canvases sit position:fixed at z-index:-1, behind all page content.
           Only one is visible at a time — they fade in/out on mode switch. */}
       <BioluminescenceCanvas visible={mode === 'saltwater'} />
-      <MorningMistCanvas     visible={mode === 'freshwater'} />
+      <WaterCausticsCanvas   visible={mode === 'freshwater'} />
       {/* relative z-[1] creates a stacking context above the MorningMistCanvas
           (z-index: 0), so all page content renders on top of the mist layer. */}
       <div className="min-h-screen pb-16 relative z-[1]">
