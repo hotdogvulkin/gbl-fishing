@@ -43,8 +43,8 @@ function createBlob(w: number, h: number, randomPos = true): MistBlob {
     rotation:      randomBetween(0, Math.PI * 2),
     rotationSpeed: randomBetween(-0.00025, 0.00025),
     alpha:         0,
-    alphaTarget:   randomBetween(0.04, 0.08),
-    alphaSpeed:    randomBetween(0.0006, 0.002),
+    alphaTarget:   randomBetween(0.06, 0.14),
+    alphaSpeed:    randomBetween(0.003, 0.008),
     phase:         randomBetween(0, Math.PI * 2),
     phaseSpeed:    randomBetween(0.0006, 0.002),
   }
@@ -100,10 +100,10 @@ export default function MorningMistCanvas({ visible }: Props) {
 
       // Radial gradient in unit-circle space; outer edge is fully transparent
       const grad = ctx!.createRadialGradient(0, 0, 0, 0, 0, 1)
-      grad.addColorStop(0,    `rgba(240, 244, 248, ${alpha})`)
-      grad.addColorStop(0.35, `rgba(240, 244, 248, ${alpha * 0.72})`)
-      grad.addColorStop(0.7,  `rgba(240, 244, 248, ${alpha * 0.28})`)
-      grad.addColorStop(1,    `rgba(240, 244, 248, 0)`)
+      grad.addColorStop(0,    `rgba(185, 205, 225, ${alpha})`)
+      grad.addColorStop(0.35, `rgba(185, 205, 225, ${alpha * 0.72})`)
+      grad.addColorStop(0.7,  `rgba(185, 205, 225, ${alpha * 0.28})`)
+      grad.addColorStop(1,    `rgba(185, 205, 225, 0)`)
 
       ctx!.fillStyle = grad
       ctx!.beginPath()
@@ -144,7 +144,7 @@ export default function MorningMistCanvas({ visible }: Props) {
         b.alpha += (b.alphaTarget - b.alpha) * b.alphaSpeed
         // Occasionally shift the alpha target so mist patches feel alive
         if (Math.random() < 0.0015) {
-          b.alphaTarget = randomBetween(0.03, 0.085)
+          b.alphaTarget = randomBetween(0.04, 0.14)
         }
 
         drawBlob(b)
