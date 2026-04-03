@@ -3,77 +3,70 @@ import { useEffect, useRef, useState } from 'react'
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface MistBlob {
-  x: number
-  y: number
-  vx: number             // horizontal drift — very slow
-  vy: number             // vertical drift — even slower
-  radiusX: number        // ellipse half-width
-  radiusY: number        // ellipse half-height
-  rotation: number       // current rotation angle (radians)
-  rotationSpeed: number  // radians per frame — near-zero
-  alpha: number          // current opacity
-  alphaTarget: number    // lerp target — shifts slowly for breathing effect
-  alphaSpeed: number     // lerp rate
-  phase: number          // sine-wave offset for gentle lateral wander
-  phaseSpeed: number     // how fast the wander cycles
+  x: number; y: number
+  vx: number; vy: number
+  radiusX: number; radiusY: number
+  rotation: number; rotationSpeed: number
+  alpha: number; alphaTarget: number; alphaSpeed: number
+  phase: number; phaseSpeed: number
 }
 
-const FADE_DURATION_MS = 800
+// DIAGNOSTIC: bright blue at high opacity — if this is invisible, canvas is not rendering at all.
+// Revert to '170, 195, 220' once confirmed visible.
+const BLOB_COLOR = '0, 100, 255'
+const FADE_MS    = 800
 
-function randomBetween(a: number, b: number) {
-  return a + Math.random() * (b - a)
-}
+function rand(a: number, b: number) { return a + Math.random() * (b - a) }
 
-// Spawn a new blob at a random position on screen (randomPos=true) or
-// drifting in from the left/right edge (randomPos=false).
-function createBlob(w: number, h: number, randomPos = true): MistBlob {
-  const vx  = randomBetween(0.06, 0.18) * (Math.random() < 0.5 ? 1 : -1)
-  const fromLeft = vx > 0
-  const x = randomPos
-    ? randomBetween(-200, w + 200)
-    : fromLeft ? randomBetween(-420, -160) : randomBetween(w + 160, w + 420)
-
+function makeBlob(w: number, h: number, fromEdge = false): MistBlob {
+  const vx = rand(0.06, 0.18) * (Math.random() < 0.5 ? 1 : -1)
   return {
-    x,
-    y:             randomBetween(h * 0.1, h * 0.9),
+    x:             fromEdge
+                     ? (vx > 0 ? rand(-420, -160) : rand(w + 160, w + 420))
+                     : rand(-100, w + 100),
+    y:             rand(h * 0.05, h * 0.95),
     vx,
-    vy:            randomBetween(0.015, 0.06) * (Math.random() < 0.5 ? 1 : -1),
-    radiusX:       randomBetween(200, 400),
-    radiusY:       randomBetween(110, 230),
-    rotation:      randomBetween(0, Math.PI * 2),
-    rotationSpeed: randomBetween(-0.00025, 0.00025),
+    vy:            rand(0.015, 0.06) * (Math.random() < 0.5 ? 1 : -1),
+    radiusX:       rand(180, 380),
+    radiusY:       rand(100, 220),
+    rotation:      rand(0, Math.PI * 2),
+    rotationSpeed: rand(-0.0003, 0.0003),
     alpha:         0,
-    alphaTarget:   randomBetween(0.06, 0.14),
-    alphaSpeed:    randomBetween(0.003, 0.008),
-    phase:         randomBetween(0, Math.PI * 2),
-    phaseSpeed:    randomBetween(0.0006, 0.002),
+    alphaTarget:   rand(0.45, 0.55),   // DIAGNOSTIC: high opacity — revert to rand(0.08, 0.18)
+    alphaSpeed:    rand(0.004, 0.010), // reaches target in ~1–3 s at 60fps
+    phase:         rand(0, Math.PI * 2),
+    phaseSpeed:    rand(0.0006, 0.002),
   }
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-interface Props {
-  visible: boolean
-}
+interface Props { visible: boolean }
 
 export default function MorningMistCanvas({ visible }: Props) {
-  const canvasRef   = useRef<HTMLCanvasElement>(null)
-  const blobsRef    = useRef<MistBlob[]>([])
-  const rafRef      = useRef<number>(0)
-  const runningRef  = useRef(false)
-  const [cssOpacity, setCssOpacity] = useState(0)
+  const canvasRef  = useRef<HTMLCanvasElement>(null)
+  const blobsRef   = useRef<MistBlob[]>([])
+  const rafRef     = useRef(0)
+  const runningRef = useRef(false)
+  // Store tick so the show/hide effect can restart the loop without
+  // duplicating the entire draw logic.
+  const tickRef    = useRef<(() => void) | null>(null)
 
-  // ── Resize handler ──────────────────────────────────────────────────────────
+  // Initialize from the current visible prop so freshwater mode starts
+  // at full opacity immediately — no flash-in on first render.
+  const [opacity, setOpacity] = useState(visible ? 1 : 0)
+
+  // ── Canvas setup: resize handler + initial blob seeding ──────────────────
   useEffect(() => {
     function resize() {
-      const canvas = canvasRef.current
-      if (!canvas) return
-      canvas.width  = window.innerWidth
-      canvas.height = window.innerHeight
-      if (blobsRef.current.length === 0) {
-        const count = Math.floor(randomBetween(5, 9))
-        blobsRef.current = Array.from({ length: count }, () =>
-          createBlob(canvas.width, canvas.height, true)
+      const c = canvasRef.current
+      if (!c) return
+      c.width  = window.innerWidth
+      c.height = window.innerHeight
+      if (!blobsRef.current.length) {
+        blobsRef.current = Array.from(
+          { length: Math.floor(rand(5, 9)) },
+          () => makeBlob(c.width, c.height)
         )
       }
     }
@@ -82,30 +75,26 @@ export default function MorningMistCanvas({ visible }: Props) {
     return () => window.removeEventListener('resize', resize)
   }, [])
 
-  // ── Animation loop ──────────────────────────────────────────────────────────
+  // ── Single animation loop — started on mount, stopped on unmount ──────────
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    function drawBlob(blob: MistBlob) {
-      const { x, y, radiusX, radiusY, rotation, alpha } = blob
-      if (alpha < 0.002) return
-
+    function drawBlob(b: MistBlob) {
+      if (b.alpha < 0.005) return
       ctx!.save()
-      ctx!.translate(x, y)
-      ctx!.rotate(rotation)
-      ctx!.scale(radiusX, radiusY)
-
-      // Radial gradient in unit-circle space; outer edge is fully transparent
-      const grad = ctx!.createRadialGradient(0, 0, 0, 0, 0, 1)
-      grad.addColorStop(0,    `rgba(185, 205, 225, ${alpha})`)
-      grad.addColorStop(0.35, `rgba(185, 205, 225, ${alpha * 0.72})`)
-      grad.addColorStop(0.7,  `rgba(185, 205, 225, ${alpha * 0.28})`)
-      grad.addColorStop(1,    `rgba(185, 205, 225, 0)`)
-
-      ctx!.fillStyle = grad
+      ctx!.translate(b.x, b.y)
+      ctx!.rotate(b.rotation)
+      ctx!.scale(b.radiusX, b.radiusY)
+      // Gradient defined in scaled unit-circle space → renders as soft ellipse
+      const g = ctx!.createRadialGradient(0, 0, 0, 0, 0, 1)
+      g.addColorStop(0,    `rgba(${BLOB_COLOR}, ${b.alpha})`)
+      g.addColorStop(0.35, `rgba(${BLOB_COLOR}, ${+(b.alpha * 0.6).toFixed(4)})`)
+      g.addColorStop(0.7,  `rgba(${BLOB_COLOR}, ${+(b.alpha * 0.25).toFixed(4)})`)
+      g.addColorStop(1,    `rgba(${BLOB_COLOR}, 0)`)
+      ctx!.fillStyle = g
       ctx!.beginPath()
       ctx!.arc(0, 0, 1, 0, Math.PI * 2)
       ctx!.fill()
@@ -114,38 +103,29 @@ export default function MorningMistCanvas({ visible }: Props) {
 
     function tick() {
       if (!runningRef.current) return
-
       const w = canvas!.width
       const h = canvas!.height
       ctx!.clearRect(0, 0, w, h)
 
       for (const b of blobsRef.current) {
-        // ── Drift ──
-        b.phase += b.phaseSpeed
-        b.x += b.vx + Math.sin(b.phase) * 0.12
-        b.y += b.vy
+        b.phase    += b.phaseSpeed
+        b.x        += b.vx + Math.sin(b.phase) * 0.12
+        b.y        += b.vy
         b.rotation += b.rotationSpeed
 
-        // Gently push y back toward middle if it wanders to the extremes
-        if (b.y < -b.radiusY * 1.5 || b.y > h + b.radiusY * 1.5) {
-          b.vy *= -1
+        // Gently bounce if blob wanders off the vertical edges
+        if (b.y < -b.radiusY * 1.5 || b.y > h + b.radiusY * 1.5) b.vy *= -1
+
+        // Respawn from the opposite edge when fully off-screen horizontally
+        if (b.x < -b.radiusX * 2.5 || b.x > w + b.radiusX * 2.5) {
+          const wasLeft = b.x < 0
+          Object.assign(b, makeBlob(w, h, true))
+          b.vx = wasLeft ? Math.abs(b.vx) : -Math.abs(b.vx)
         }
 
-        // Respawn on the opposite side when the blob has fully drifted off-screen
-        const offLeft  = b.x < -b.radiusX * 2.5
-        const offRight = b.x > w + b.radiusX * 2.5
-        if (offLeft || offRight) {
-          Object.assign(b, createBlob(w, h, false))
-          if (offLeft)  b.vx = Math.abs(b.vx)   // enter from left
-          if (offRight) b.vx = -Math.abs(b.vx)  // enter from right
-        }
-
-        // ── Alpha breathe ──
+        // Alpha breathe
         b.alpha += (b.alphaTarget - b.alpha) * b.alphaSpeed
-        // Occasionally shift the alpha target so mist patches feel alive
-        if (Math.random() < 0.0015) {
-          b.alphaTarget = randomBetween(0.04, 0.14)
-        }
+        if (Math.random() < 0.002) b.alphaTarget = rand(0.06, 0.18)
 
         drawBlob(b)
       }
@@ -153,92 +133,46 @@ export default function MorningMistCanvas({ visible }: Props) {
       rafRef.current = requestAnimationFrame(tick)
     }
 
-    runningRef.current = true
-    rafRef.current = requestAnimationFrame(tick)
+    // Expose tick for the show/hide effect's restart path
+    tickRef.current = tick
 
-    // Pause when tab is hidden
-    function handleVisibility() {
+    // Page visibility API — pause RAF when tab is hidden
+    function onVisibility() {
       if (document.hidden) {
         cancelAnimationFrame(rafRef.current)
       } else if (runningRef.current) {
         rafRef.current = requestAnimationFrame(tick)
       }
     }
-    document.addEventListener('visibilitychange', handleVisibility)
+    document.addEventListener('visibilitychange', onVisibility)
+
+    runningRef.current = true
+    rafRef.current = requestAnimationFrame(tick)
 
     return () => {
       runningRef.current = false
       cancelAnimationFrame(rafRef.current)
-      document.removeEventListener('visibilitychange', handleVisibility)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [])
 
-  // ── Show / hide with CSS fade ───────────────────────────────────────────────
+  // ── Show / hide: CSS opacity fade + pause loop when invisible ─────────────
   useEffect(() => {
-    if (visible) {
-      setCssOpacity(1)
-      if (!runningRef.current) {
-        const canvas = canvasRef.current
-        const ctx = canvas?.getContext('2d')
-        if (!canvas || !ctx) return
+    setOpacity(visible ? 1 : 0)
 
-        runningRef.current = true
-
-        function drawBlob(blob: MistBlob) {
-          const { x, y, radiusX, radiusY, rotation, alpha } = blob
-          if (alpha < 0.002) return
-          ctx!.save()
-          ctx!.translate(x, y)
-          ctx!.rotate(rotation)
-          ctx!.scale(radiusX, radiusY)
-          const grad = ctx!.createRadialGradient(0, 0, 0, 0, 0, 1)
-          grad.addColorStop(0,    `rgba(240, 244, 248, ${alpha})`)
-          grad.addColorStop(0.35, `rgba(240, 244, 248, ${alpha * 0.72})`)
-          grad.addColorStop(0.7,  `rgba(240, 244, 248, ${alpha * 0.28})`)
-          grad.addColorStop(1,    `rgba(240, 244, 248, 0)`)
-          ctx!.fillStyle = grad
-          ctx!.beginPath()
-          ctx!.arc(0, 0, 1, 0, Math.PI * 2)
-          ctx!.fill()
-          ctx!.restore()
-        }
-
-        function tick() {
-          if (!runningRef.current) return
-          const w = canvas!.width
-          const h = canvas!.height
-          ctx!.clearRect(0, 0, w, h)
-          for (const b of blobsRef.current) {
-            b.phase += b.phaseSpeed
-            b.x += b.vx + Math.sin(b.phase) * 0.12
-            b.y += b.vy
-            b.rotation += b.rotationSpeed
-            if (b.y < -b.radiusY * 1.5 || b.y > h + b.radiusY * 1.5) b.vy *= -1
-            const offLeft  = b.x < -b.radiusX * 2.5
-            const offRight = b.x > w + b.radiusX * 2.5
-            if (offLeft || offRight) {
-              Object.assign(b, createBlob(w, h, false))
-              if (offLeft)  b.vx = Math.abs(b.vx)
-              if (offRight) b.vx = -Math.abs(b.vx)
-            }
-            b.alpha += (b.alphaTarget - b.alpha) * b.alphaSpeed
-            if (Math.random() < 0.0015) b.alphaTarget = randomBetween(0.03, 0.085)
-            drawBlob(b)
-          }
-          rafRef.current = requestAnimationFrame(tick)
-        }
-        rafRef.current = requestAnimationFrame(tick)
-      }
-    } else {
-      setCssOpacity(0)
+    if (!visible) {
+      // Stop drawing after the CSS fade completes — saves CPU
       const t = setTimeout(() => {
         runningRef.current = false
         cancelAnimationFrame(rafRef.current)
-        const canvas = canvasRef.current
-        const ctx = canvas?.getContext('2d')
-        if (canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height)
-      }, FADE_DURATION_MS)
+        const c = canvasRef.current
+        c?.getContext('2d')?.clearRect(0, 0, c.width, c.height)
+      }, FADE_MS)
       return () => clearTimeout(t)
+    } else if (!runningRef.current && tickRef.current) {
+      // Restart if the loop was previously stopped (e.g. switching from saltwater)
+      runningRef.current = true
+      rafRef.current = requestAnimationFrame(tickRef.current)
     }
   }, [visible])
 
@@ -246,18 +180,14 @@ export default function MorningMistCanvas({ visible }: Props) {
     <canvas
       ref={canvasRef}
       style={{
-        position: 'fixed',
-        inset: 0,
-        width: '100%',
-        height: '100%',
-        // z-index: 0 places the canvas above body's painted background
-        // (category 6 in CSS stacking order) so the blobs are actually visible.
-        // The Layout content wrapper sits at z-index: 1, keeping all page
-        // content above the canvas.
-        zIndex: 0,
+        position:      'fixed',
+        inset:         0,
+        width:         '100%',
+        height:        '100%',
+        zIndex:        0,        // above body background (z:auto), below Layout z-[1]
         pointerEvents: 'none',
-        opacity: cssOpacity,
-        transition: `opacity ${FADE_DURATION_MS}ms ease`,
+        opacity,
+        transition:    `opacity ${FADE_MS}ms ease`,
       }}
       aria-hidden="true"
     />
